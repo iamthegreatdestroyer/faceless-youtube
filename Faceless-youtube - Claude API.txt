@@ -1,0 +1,54 @@
+Faceless-youtube - Claude API 
+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
+
+Faceless-youtube - Grok API
+xai-djP8uaH7UqTLQNfOatNGErpdFwHf7Sf2crbT4s9iCcqfvdQBGKS8YgQFpv0kCuIXfDt6pQ1MIwRAXHBs
+"
+url https://api.x.ai/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer xai-djP8uaH7UqTLQNfOatNGErpdFwHf7Sf2crbT4s9iCcqfvdQBGKS8YgQFpv0kCuIXfDt6pQ1MIwRAXHBs" \
+    -d '{
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a test assistant."
+        },
+        {
+          "role": "user",
+          "content": "Testing. Just say hi and hello world and nothing else."
+        }
+      ],
+      "model": "grok-4-latest",
+      "stream": false,
+      "temperature": 0
+    }'
+"
+
+======================================
+
+Faceless-youtube - Google AI Studio (Gemini)
+
+API key details
+API Key
+AIzaSyAFfQ2XPiz-ewrb9rYsiiD35bg42BrR9uo
+Name
+faceless-youtube
+Project name
+projects/683230558463
+Project number
+683230558463
+
+======================================
+
+Faceless-youtube - Youtube API
+AQ.Ab8RN6Iv4SDqyJ9BXbtbRw_jIBnQh6g_WgSJMhk9C87P0gPyqw
+
+Service Account
+https://console.cloud.google.com/iam-admin/serviceaccounts/details/faceless-youtube@stunning-base-474118-j5.iam.gserviceaccount.com?hl=en&project=stunning-base-474118-j5
+
+======================================
+
+Ollama - pw
+D_wqe9aUkrAE_Tf
+
+Connect The_Plug with thegreatdrstroyer

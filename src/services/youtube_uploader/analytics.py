@@ -532,15 +532,15 @@ class AnalyticsTracker:
             # Get video analytics with time-series data
             analytics_data = await self._get_video_analytics(account_name, video_id, days)
             
-            if analytics_data and \"totals\" in analytics_data:
+            if analytics_data and "totals" in analytics_data:
                 # Use Analytics API time-series data
-                totals = analytics_data[\"totals\"]
-                time_series = analytics_data.get(\"time_series\", [])
+                totals = analytics_data["totals"]
+                time_series = analytics_data.get("time_series", [])
                 
                 # Calculate engagement rate
-                views = totals.get(\"views\", 0)
-                likes = totals.get(\"likes\", 0)
-                comments = totals.get(\"comments\", 0)
+                views = totals.get("views", 0)
+                likes = totals.get("likes", 0)
+                comments = totals.get("comments", 0)
                 engagement_rate = ((likes + comments) / views * 100) if views > 0 else 0.0
                 
                 return PerformanceMetrics(
@@ -548,13 +548,13 @@ class AnalyticsTracker:
                     start_date=start_date,
                     end_date=end_date,
                     total_views=views,
-                    total_watch_time_minutes=totals.get(\"watch_time_minutes\", 0),
+                    total_watch_time_minutes=totals.get("watch_time_minutes", 0),
                     total_likes=likes,
                     total_comments=comments,
-                    total_shares=totals.get(\"shares\", 0),
+                    total_shares=totals.get("shares", 0),
                     average_engagement_rate=engagement_rate,
-                    daily_views=[point[\"views\"] for point in time_series],
-                    daily_watch_time=[point[\"watch_time_minutes\"] for point in time_series]
+                    daily_views=[point["views"] for point in time_series],
+                    daily_watch_time=[point["watch_time_minutes"] for point in time_series]
                 )
             else:
                 # Fallback to basic video stats if Analytics API fails
@@ -574,26 +574,26 @@ class AnalyticsTracker:
             # Get channel analytics with time-series data
             analytics_data = await self._get_channel_analytics(account_name, days)
             
-            if analytics_data and \"totals\" in analytics_data:
+            if analytics_data and "totals" in analytics_data:
                 # Use Analytics API time-series data
-                totals = analytics_data[\"totals\"]
-                time_series = analytics_data.get(\"time_series\", [])
+                totals = analytics_data["totals"]
+                time_series = analytics_data.get("time_series", [])
                 
                 return PerformanceMetrics(
                     channel_id=account_name,
                     start_date=start_date,
                     end_date=end_date,
-                    total_views=totals.get(\"views\", 0),
-                    total_watch_time_minutes=totals.get(\"watch_time_minutes\", 0),
-                    total_likes=totals.get(\"likes\", 0),
-                    total_comments=totals.get(\"comments\", 0),
-                    total_shares=totals.get(\"shares\", 0),
-                    total_subscribers_gained=totals.get(\"subscribers_gained\", 0),
-                    total_subscribers_lost=totals.get(\"subscribers_lost\", 0),
-                    average_daily_views=totals.get(\"views\", 0) / days if days > 0 else 0,
-                    daily_views=[point[\"views\"] for point in time_series],
-                    daily_watch_time=[point[\"watch_time_minutes\"] for point in time_series],
-                    daily_subscribers_gained=[point[\"subscribers_gained\"] for point in time_series]
+                    total_views=totals.get("views", 0),
+                    total_watch_time_minutes=totals.get("watch_time_minutes", 0),
+                    total_likes=totals.get("likes", 0),
+                    total_comments=totals.get("comments", 0),
+                    total_shares=totals.get("shares", 0),
+                    total_subscribers_gained=totals.get("subscribers_gained", 0),
+                    total_subscribers_lost=totals.get("subscribers_lost", 0),
+                    average_daily_views=totals.get("views", 0) / days if days > 0 else 0,
+                    daily_views=[point["views"] for point in time_series],
+                    daily_watch_time=[point["watch_time_minutes"] for point in time_series],
+                    daily_subscribers_gained=[point["subscribers_gained"] for point in time_series]
                 )
             else:
                 # Fallback to basic channel stats if Analytics API fails

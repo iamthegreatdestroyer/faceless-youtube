@@ -30,10 +30,10 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.services.script_generator import ScriptGenerator
 from src.services.video_assembler import VideoAssembler
-from src.services.tts_engine import TTSEngine
+from src.services.video_assembler.tts_engine import TTSEngine
 from src.services.asset_scraper import ScraperManager
-from src.database.models import Video, VideoAsset, VideoJob
-from src.database.database import SessionLocal
+from src.core.models import Video, Asset
+from src.core.database import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("video-pipeline-mcp")

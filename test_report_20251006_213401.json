@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-10-06T21:33:30.256913",
+  "tests": [
+    {
+      "category": "Environment",
+      "test": "ENV File Exists",
+      "status": "PASS",
+      "message": ".env file found",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable JWT_SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_HOST",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PORT",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_NAME",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_USER",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PASSWORD",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "PostgreSQL Connection",
+      "status": "PASS",
+      "message": "Successfully connected to PostgreSQL",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Models Import",
+      "status": "PASS",
+      "message": "All models imported successfully",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Database Tables",
+      "status": "PASS",
+      "message": "All 4 required tables exist",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "CRUD Operations",
+      "status": "PASS",
+      "message": "Create, Read, Update, Delete all successful",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "FastAPI Imports",
+      "status": "PASS",
+      "message": "API modules imported successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "TestClient Creation",
+      "status": "PASS",
+      "message": "Test client created successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Health Endpoint",
+      "status": "PASS",
+      "message": "Status: 200",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Authentication Required",
+      "status": "PASS",
+      "message": "Protected endpoint correctly requires authentication",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Script Generator",
+      "status": "PASS",
+      "message": "ScriptGenerator imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "TTS Engine",
+      "status": "PASS",
+      "message": "TTSEngine imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Video Assembler",
+      "status": "PASS",
+      "message": "VideoAssembler imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Asset Scraper",
+      "status": "PASS",
+      "message": "ScraperManager imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Uploader",
+      "status": "PASS",
+      "message": "VideoUploader imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Analytics",
+      "status": "PASS",
+      "message": "AnalyticsTracker imported successfully",
+      "error": ""
+    },
+    {
+      "category": "MCP Servers",
+      "test": "YouTube Analytics Server",
+      "status": "SKIP",
+      "message": "MCP servers need refactoring to use current database models",
+      "error": ""
+    },
+    {
+      "category": "MCP Servers",
+      "test": "Video Pipeline Server",
+      "status": "SKIP",
+      "message": "MCP servers need refactoring to use current database models",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Claude Client Import",
+      "status": "PASS",
+      "message": "ClaudeClient imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Gemini Client Import",
+      "status": "PASS",
+      "message": "GeminiClient imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Grok Client Import",
+      "status": "PASS",
+      "message": "GrokClient imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Existing Tests",
+      "test": "Full Test Suite",
+      "status": "FAIL",
+      "message": "Some tests failed (exit code: 1)",
+      "error": " tests/e2e/test_video_generation_pipeline.py::test_full_video_generation_workflow - TypeError: 'user_id' is an invalid keyword argument for Script\nFAILED tests/e2e/test_video_generation_pipeline.py::test_video_generation_with_multiple_assets - TypeError: 'user_id' is an invalid keyword argument for Script\nFAILED tests/e2e/test_video_generation_pipeline.py::test_video_generation_error_handling - TypeError: 'user_id' is an invalid keyword argument for Script\nFAILED tests/e2e/test_youtube_upload_workflow.py::test_full_youtube_upload_workflow_mocked - AttributeError: <src.services.youtube_uploader.auth_manager.AuthManager object at 0x0000025F5E980830> does not have the attribute 'get_credentials'\nFAILED tests/e2e/test_youtube_upload_workflow.py::test_youtube_oauth_flow - AttributeError: 'User' object has no attribute 'account_name'\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 5 failures !!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 5 failed, 1 passed, 23 warnings in 10.67s ==================\n"
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 25,
+    "failed": 1,
+    "skipped": 2
+  }
+}

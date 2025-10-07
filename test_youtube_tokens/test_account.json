@@ -1,0 +1,17 @@
+{
+  "account_name": "test_account",
+  "email": null,
+  "channel_id": null,
+  "channel_title": null,
+  "token": "test_access_token",
+  "refresh_token": "test_refresh_token",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "client_id": "test_client_id",
+  "client_secret": "test_client_secret",
+  "scopes": [
+    "https://www.googleapis.com/auth/youtube.upload"
+  ],
+  "expiry": "2026-01-01 00:00:00",
+  "created_at": "2025-10-07 01:57:42.855241",
+  "last_refreshed": null
+}

@@ -28,7 +28,7 @@ def test_user(db: Session):
     user = User(
         username="e2e_test_user",
         email="e2e@test.com",
-        hashed_password="test_hash"
+        password_hash="$2b$12$test_hash_for_e2e"
     )
     db.add(user)
     db.commit()
@@ -67,16 +67,15 @@ async def test_full_video_generation_workflow(test_user, db: Session, cleanup_te
     """
     # Step 1: Create script
     script = Script(
-        user_id=test_user.id,
         content="""Welcome to this meditation video.
         Close your eyes and take a deep breath.
         Feel the calm washing over you.
         Let go of all your worries.""",
         niche="meditation",
         style="calm",
-        duration_seconds=30,
-        voice="en-US-Neural2-C",
-        created_at=datetime.utcnow()
+        title="E2E Test Meditation Script",
+        actual_word_count=20,
+        target_duration_seconds=30
     )
     db.add(script)
     db.commit()
@@ -194,13 +193,12 @@ async def test_video_generation_with_multiple_assets(test_user, db: Session, cle
     Tests timeline building with multiple assets and transitions.
     """
     script = Script(
-        user_id=test_user.id,
         content="First scene. Second scene. Third scene.",
         niche="tutorial",
         style="professional",
-        duration_seconds=45,
-        voice="en-US-Neural2-A",
-        created_at=datetime.utcnow()
+        title="Multi-Asset Test Script",
+        target_duration_seconds=45,
+        actual_word_count=6
     )
     db.add(script)
     db.commit()
@@ -251,13 +249,12 @@ async def test_video_generation_error_handling(test_user, db: Session):
     Tests that failures are properly handled and recorded.
     """
     script = Script(
-        user_id=test_user.id,
         content="Test script",
         niche="test",
         style="test",
-        duration_seconds=10,
-        voice="invalid-voice",
-        created_at=datetime.utcnow()
+        title="Error Test Script",
+        target_duration_seconds=10,
+        actual_word_count=2
     )
     db.add(script)
     db.commit()

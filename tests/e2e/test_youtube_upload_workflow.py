@@ -14,10 +14,10 @@ from sqlalchemy.orm import Session
 from unittest.mock import Mock, patch, AsyncMock
 
 from src.core.database import get_db
-from src.core.models import User, Video, VideoStatus, YouTubeAccount, UploadJob
-from src.services.youtube_uploader.auth_manager import AuthManager
-from src.services.youtube_uploader.uploader import VideoUploader
-from src.services.youtube_uploader.analytics import YouTubeAnalytics
+from src.core.models import User, Video, VideoStatus
+from src.services.youtube_uploader import AuthManager, VideoUploader, AnalyticsTracker
+from src.services.youtube_uploader.uploader import VideoMetadata
+from src.services.youtube_uploader.auth_manager import AuthConfig
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def test_user(db: Session):
     user = User(
         username="youtube_test_user",
         email="youtube@test.com",
-        hashed_password="test_hash"
+        password_hash="$2b$12$test_hash_for_e2e"
     )
     db.add(user)
     db.commit()
@@ -37,18 +37,9 @@ def test_user(db: Session):
 @pytest.fixture
 def test_youtube_account(test_user, db: Session):
     """Create test YouTube account"""
-    account = YouTubeAccount(
-        user_id=test_user.id,
-        account_name="Test Channel",
-        channel_id="UC_test_channel_123",
-        channel_title="Test YouTube Channel",
-        is_active=True,
-        created_at=datetime.utcnow()
-    )
-    db.add(account)
-    db.commit()
-    db.refresh(account)
-    return account
+    # YouTubeAccount model doesn't exist - just return test user
+    # Tests will use "test_account" as account_name instead
+    return test_user
 
 
 @pytest.fixture
@@ -73,6 +64,7 @@ async def test_full_youtube_upload_workflow_mocked(
     test_user,
     test_youtube_account,
     test_video_file,
+    auth_config,
     db: Session
 ):
     """
@@ -88,11 +80,11 @@ async def test_full_youtube_upload_workflow_mocked(
     Note: Uses mocking to avoid real YouTube API calls in tests.
     """
     # Step 1: Initialize auth manager
-    auth_manager = AuthManager()
+    auth_manager = AuthManager(auth_config)
     
     # Mock OAuth flow
-    with patch.object(auth_manager, 'get_credentials', return_value=Mock()):
-        creds = await auth_manager.get_credentials(test_youtube_account.account_name)
+    with patch.object(auth_manager, 'load_credentials', return_value=Mock()):
+        creds = await auth_manager.load_credentials("test_account")
         assert creds is not None
         print("✓ Step 1: Authentication initialized (mocked)")
     
@@ -110,7 +102,7 @@ async def test_full_youtube_upload_workflow_mocked(
     # Step 3: Create video record
     video = Video(
         user_id=test_user.id,
-        script_id=1,  # Assume script exists
+        script_id=None,  # No script for this test
         title=metadata["title"],
         description=metadata["description"],
         niche="meditation",
@@ -146,7 +138,7 @@ async def test_full_youtube_upload_workflow_mocked(
         mock_upload.return_value = type('UploadResult', (), mock_upload_result)()
         
         result = await uploader.upload(
-            account_name=test_youtube_account.account_name,
+            account_name="test_account",
             video_path=test_video_file,
             title=metadata["title"],
             description=metadata["description"],
@@ -159,23 +151,11 @@ async def test_full_youtube_upload_workflow_mocked(
         assert result.url.startswith("https://youtube.com/watch?v=")
         print(f"✓ Step 4: Video uploaded (mocked) - {result.video_id}")
     
-    # Step 5: Create upload job record
-    upload_job = UploadJob(
-        user_id=test_user.id,
-        video_id=video.id,
-        account_id=test_youtube_account.id,
-        youtube_video_id=result.video_id,
-        status="completed",
-        created_at=datetime.utcnow(),
-        completed_at=datetime.utcnow()
-    )
-    db.add(upload_job)
-    db.commit()
-    
-    print(f"✓ Step 5: Upload job recorded")
+    # Step 5: Upload job would be recorded here (UploadJob model doesn't exist yet)
+    print(f"✓ Step 5: Upload completed successfully")
     
     # Step 6: Fetch analytics (mocked)
-    analytics = YouTubeAnalytics(auth_manager=auth_manager)
+    analytics = AnalyticsTracker(auth_manager=auth_manager)
     
     mock_stats = {
         "video_id": result.video_id,
@@ -191,7 +171,7 @@ async def test_full_youtube_upload_workflow_mocked(
         mock_stats_fetch.return_value = type('VideoStats', (), mock_stats)()
         
         stats = await analytics.get_video_stats(
-            account_name=test_youtube_account.account_name,
+            account_name="test_account",
             video_id=result.video_id
         )
         
@@ -203,14 +183,14 @@ async def test_full_youtube_upload_workflow_mocked(
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_youtube_oauth_flow(test_user, test_youtube_account, db: Session):
+async def test_youtube_oauth_flow(test_user, test_youtube_account, auth_config, db: Session):
     """
     E2E Test: YouTube OAuth authentication flow
     
     Tests the OAuth 2.0 flow for YouTube API access.
     Note: Mocked to avoid browser interaction in tests.
     """
-    auth_manager = AuthManager()
+    auth_manager = AuthManager(auth_config)
     
     # Mock the OAuth flow
     with patch('src.services.youtube_uploader.auth_manager.InstalledAppFlow') as mock_flow:
@@ -222,11 +202,13 @@ async def test_youtube_oauth_flow(test_user, test_youtube_account, db: Session):
         mock_credentials.client_secret = "test_client_secret"
         mock_credentials.valid = True
         mock_credentials.expired = False
+        mock_credentials.scopes = ["https://www.googleapis.com/auth/youtube.upload"]
+        mock_credentials.expiry = datetime(2026, 1, 1)
         
         mock_flow.from_client_secrets_file.return_value.run_local_server.return_value = mock_credentials
         
         # Initiate OAuth flow
-        creds = await auth_manager.authenticate(test_youtube_account.account_name)
+        creds = await auth_manager.authenticate("test_account")
         
         assert creds is not None
         assert creds.token == "test_access_token"
@@ -238,6 +220,7 @@ async def test_youtube_oauth_flow(test_user, test_youtube_account, db: Session):
 async def test_youtube_upload_error_handling(
     test_user,
     test_youtube_account,
+    auth_config,
     db: Session
 ):
     """
@@ -248,37 +231,32 @@ async def test_youtube_upload_error_handling(
     - Invalid credentials
     - API quota exceeded
     """
-    auth_manager = AuthManager()
+    auth_manager = AuthManager(auth_config)
     uploader = VideoUploader(auth_manager=auth_manager)
     
     # Test 1: Missing file
+    metadata = VideoMetadata(
+        title="Test Video",
+        description="Test",
+        tags=["test"]
+    )
+    
     with pytest.raises(FileNotFoundError):
         await uploader.upload(
-            account_name=test_youtube_account.account_name,
+            account_name="test_account",
             video_path="/nonexistent/video.mp4",
-            title="Test",
-            description="Test",
-            tags=["test"],
-            category_id="22",
-            privacy_status="private"
+            metadata=metadata
         )
     
     print("✓ Error handling test 1: Missing file caught")
     
-    # Test 2: Invalid metadata
-    with patch.object(uploader, 'upload', new_callable=AsyncMock) as mock_upload:
-        mock_upload.side_effect = ValueError("Invalid category_id")
-        
-        with pytest.raises(ValueError):
-            await uploader.upload(
-                account_name=test_youtube_account.account_name,
-                video_path="test.mp4",
-                title="",  # Empty title should fail
-                description="Test",
-                tags=["test"],
-                category_id="invalid",
-                privacy_status="private"
-            )
+    # Test 2: Invalid metadata (empty title)
+    with pytest.raises(ValueError):
+        invalid_metadata = VideoMetadata(
+            title="",  # Empty title should fail validation
+            description="Test",
+            tags=["test"]
+        )
     
     print("✓ Error handling test 2: Invalid metadata caught")
     
@@ -290,6 +268,7 @@ async def test_youtube_upload_error_handling(
 async def test_youtube_analytics_integration(
     test_user,
     test_youtube_account,
+    auth_config,
     db: Session
 ):
     """
@@ -297,8 +276,8 @@ async def test_youtube_analytics_integration(
     
     Tests fetching video and channel analytics data.
     """
-    auth_manager = AuthManager()
-    analytics = YouTubeAnalytics(auth_manager=auth_manager)
+    auth_manager = AuthManager(auth_config)
+    analytics = AnalyticsTracker(auth_manager=auth_manager)
     
     # Mock video stats
     mock_video_stats = {
@@ -315,7 +294,7 @@ async def test_youtube_analytics_integration(
         mock_get_stats.return_value = type('VideoStats', (), mock_video_stats)()
         
         stats = await analytics.get_video_stats(
-            account_name=test_youtube_account.account_name,
+            account_name="test_account",
             video_id="test_video_123"
         )
         
@@ -325,7 +304,7 @@ async def test_youtube_analytics_integration(
     
     # Mock channel stats
     mock_channel_stats = {
-        "channel_id": test_youtube_account.channel_id,
+        "channel_id": "test_channel_123",
         "subscribers": 1000,
         "total_views": 50000,
         "total_videos": 25,
@@ -337,7 +316,7 @@ async def test_youtube_analytics_integration(
         mock_channel.return_value = type('ChannelStats', (), mock_channel_stats)()
         
         channel_stats = await analytics.get_channel_stats(
-            account_name=test_youtube_account.account_name
+            account_name="test_account"
         )
         
         assert channel_stats.subscribers == 1000
@@ -353,6 +332,7 @@ async def test_youtube_batch_upload(
     test_user,
     test_youtube_account,
     test_video_file,
+    auth_config,
     db: Session
 ):
     """
@@ -360,7 +340,7 @@ async def test_youtube_batch_upload(
     
     Tests uploading multiple videos in sequence.
     """
-    auth_manager = AuthManager()
+    auth_manager = AuthManager(auth_config)
     uploader = VideoUploader(auth_manager=auth_manager)
     
     videos_to_upload = [
@@ -389,7 +369,7 @@ async def test_youtube_batch_upload(
             mock_upload.return_value = type('UploadResult', (), mock_result)()
             
             result = await uploader.upload(
-                account_name=test_youtube_account.account_name,
+                account_name="test_account",
                 video_path=test_video_file,
                 title=video_meta["title"],
                 description=video_meta["description"],

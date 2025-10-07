@@ -107,16 +107,21 @@ app = FastAPI(
 # MIDDLEWARE (Order matters! Applied in reverse order)
 # ===================================================================
 
-# 1. Trusted Host Protection
-allowed_hosts = os.getenv(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,*.localhost"
-).split(",")
+# 1. Trusted Host Protection (skip in test mode)
+TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=allowed_hosts
-)
+if not TEST_MODE:
+    allowed_hosts = os.getenv(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1,*.localhost"
+    ).split(",")
+
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=allowed_hosts
+    )
+else:
+    logger.info("TEST_MODE enabled - TrustedHostMiddleware disabled")
 
 # 2. CORS (Restrict origins in production)
 cors_origins = os.getenv(

@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-10-06T15:54:39.209253",
+  "tests": [
+    {
+      "category": "Environment",
+      "test": "ENV File Exists",
+      "status": "PASS",
+      "message": ".env file found",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable JWT_SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_HOST",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PORT",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_NAME",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_USER",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PASSWORD",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "PostgreSQL Connection",
+      "status": "PASS",
+      "message": "Successfully connected to PostgreSQL",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Models Import",
+      "status": "PASS",
+      "message": "All models imported successfully",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Database Tables",
+      "status": "PASS",
+      "message": "All 4 required tables exist",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "CRUD Operations",
+      "status": "PASS",
+      "message": "Create, Read, Update, Delete all successful",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "FastAPI Imports",
+      "status": "PASS",
+      "message": "API modules imported successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "TestClient Creation",
+      "status": "PASS",
+      "message": "Test client created successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Health Endpoint",
+      "status": "PASS",
+      "message": "Status: 200",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Authentication Required",
+      "status": "FAIL",
+      "message": "Expected 401, got 404",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Script Generator",
+      "status": "PASS",
+      "message": "ScriptGenerator imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "TTS Engine",
+      "status": "PASS",
+      "message": "TTSEngine imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Video Assembler",
+      "status": "PASS",
+      "message": "VideoAssembler imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Asset Scraper",
+      "status": "PASS",
+      "message": "ScraperManager imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Uploader",
+      "status": "PASS",
+      "message": "VideoUploader imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Analytics",
+      "status": "PASS",
+      "message": "AnalyticsTracker imported successfully",
+      "error": ""
+    },
+    {
+      "category": "MCP Servers",
+      "test": "YouTube Analytics Server",
+      "status": "FAIL",
+      "message": "No module named 'src.database'",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 532, in test_mcp_servers\n    from src.mcp_servers.youtube_analytics_server import YouTubeAnalyticsMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 10, in <module>\n    from .video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\video_pipeline_server.py\", line 35, in <module>\n    from src.database.models import Video, VideoAsset, VideoJob\nModuleNotFoundError: No module named 'src.database'\n"
+    },
+    {
+      "category": "MCP Servers",
+      "test": "Video Pipeline Server",
+      "status": "FAIL",
+      "message": "No module named 'src.database'",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 545, in test_mcp_servers\n    from src.mcp_servers.video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 10, in <module>\n    from .video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\video_pipeline_server.py\", line 35, in <module>\n    from src.database.models import Video, VideoAsset, VideoJob\nModuleNotFoundError: No module named 'src.database'\n"
+    },
+    {
+      "category": "AI Integration",
+      "test": "Claude Client",
+      "status": "SKIP",
+      "message": "ANTHROPIC_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Gemini Client",
+      "status": "SKIP",
+      "message": "GOOGLE_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Grok Client",
+      "status": "SKIP",
+      "message": "XAI_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "Existing Tests",
+      "test": "Full Test Suite",
+      "status": "FAIL",
+      "message": "Some tests failed (exit code: 1)",
+      "error": "mocker, test_user, test_video_file, test_youtube_account, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory\n>       use 'pytest --fixtures [testpath]' for help on them.\n\nC:\\FacelessYouTube\\tests\\e2e\\test_youtube_upload_workflow.py:21\n=========================== short test summary info ===========================\nERROR tests/e2e/test_video_generation_pipeline.py::test_full_video_generation_workflow\nERROR tests/e2e/test_video_generation_pipeline.py::test_video_generation_with_multiple_assets\nERROR tests/e2e/test_video_generation_pipeline.py::test_video_generation_error_handling\nERROR tests/e2e/test_video_generation_pipeline.py::test_asset_scraper_integration\nERROR tests/e2e/test_youtube_upload_workflow.py::test_full_youtube_upload_workflow_mocked\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 5 failures !!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 20 warnings, 5 errors in 7.06s ========================\n"
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 21,
+    "failed": 4,
+    "skipped": 3
+  }
+}

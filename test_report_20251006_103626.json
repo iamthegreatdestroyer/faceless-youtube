@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-10-06T10:35:58.336452",
+  "tests": [
+    {
+      "category": "Environment",
+      "test": "ENV File Exists",
+      "status": "PASS",
+      "message": ".env file found",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable JWT_SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_HOST",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PORT",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_NAME",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_USER",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PASSWORD",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "PostgreSQL Connection",
+      "status": "FAIL",
+      "message": "Could not connect to PostgreSQL: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\npsycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 142, in test_database\n    with engine.connect() as conn:\n         ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3277, in connect\n    return self._connection_cls(self)\n           ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 145, in __init__\n    Connection._handle_dbapi_exception_noconnection(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        err, dialect, engine\n        ^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 2440, in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\nsqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)\n"
+    },
+    {
+      "category": "Database",
+      "test": "Models Import",
+      "status": "PASS",
+      "message": "All models imported successfully",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Database Tables",
+      "status": "FAIL",
+      "message": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\npsycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 172, in test_database\n    inspector = inspect(engine)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\inspection.py\", line 140, in inspect\n    ret = reg(subject)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\reflection.py\", line 313, in _engine_insp\n    return Inspector._construct(Inspector._init_engine, bind)\n           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\reflection.py\", line 246, in _construct\n    init(self, bind)\n    ~~~~^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\reflection.py\", line 257, in _init_engine\n    engine.connect().close()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3277, in connect\n    return self._connection_cls(self)\n           ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 145, in __init__\n    Connection._handle_dbapi_exception_noconnection(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        err, dialect, engine\n        ^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 2440, in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\nsqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)\n"
+    },
+    {
+      "category": "Database",
+      "test": "CRUD Operations",
+      "status": "FAIL",
+      "message": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\npsycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 210, in test_database\n    db.commit()\n    ~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 2032, in commit\n    trans.commit(_to_root=True)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^\n  File \"<string>\", line 2, in commit\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py\", line 137, in _go\n    ret_value = fn(self, *arg, **kw)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 1313, in commit\n    self._prepare_impl()\n    ~~~~~~~~~~~~~~~~~~^^\n  File \"<string>\", line 2, in _prepare_impl\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py\", line 137, in _go\n    ret_value = fn(self, *arg, **kw)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 1288, in _prepare_impl\n    self.session.flush()\n    ~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 4345, in flush\n    self._flush(objects)\n    ~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 4480, in _flush\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 4441, in _flush\n    flush_context.execute()\n    ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py\", line 466, in execute\n    rec.execute(self)\n    ~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py\", line 642, in execute\n    util.preloaded.orm_persistence.save_obj(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        self.mapper,\n        ^^^^^^^^^^^^\n        uow.states_for_mapper_hierarchy(self.mapper, False, False),\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        uow,\n        ^^^^\n    )\n    ^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py\", line 68, in save_obj\n    ) in _organize_states_for_save(base_mapper, states, uowtransaction):\n         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py\", line 223, in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\n                                            ~~~~~~~~~~~~~~~~~~~~~~~^\n        base_mapper, uowtransaction, states\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ):\n    ^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py\", line 1759, in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n  File \"<string>\", line 2, in connection\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py\", line 137, in _go\n    ret_value = fn(self, *arg, **kw)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 1039, in connection\n    return self._connection_for_bind(bind, execution_options)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 2, in _connection_for_bind\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py\", line 137, in _go\n    ret_value = fn(self, *arg, **kw)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 1175, in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n        bind, execution_options\n    )\n  File \"<string>\", line 2, in _connection_for_bind\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py\", line 137, in _go\n    ret_value = fn(self, *arg, **kw)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\orm\\session.py\", line 1189, in _connection_for_bind\n    conn = bind.connect()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3277, in connect\n    return self._connection_cls(self)\n           ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 145, in __init__\n    Connection._handle_dbapi_exception_noconnection(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        err, dialect, engine\n        ^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 2440, in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 143, in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\base.py\", line 3301, in raw_connection\n    return self.pool.connect()\n           ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 447, in connect\n    return _ConnectionFairy._checkout(self)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 1264, in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 711, in checkout\n    rec = pool._do_get()\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 177, in _do_get\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py\", line 175, in _do_get\n    return self._create_connection()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 388, in _create_connection\n    return _ConnectionRecord(self)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 673, in __init__\n    self.__connect()\n    ~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 899, in __connect\n    with util.safe_reraise():\n         ~~~~~~~~~~~~~~~~~^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py\", line 224, in __exit__\n    raise exc_value.with_traceback(exc_tb)\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\pool\\base.py\", line 895, in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\create.py\", line 661, in connect\n    return dialect.connect(*cargs, **cparams)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\sqlalchemy\\engine\\default.py\", line 629, in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\FacelessYouTube\\venv\\Lib\\site-packages\\psycopg2\\__init__.py\", line 135, in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\nsqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"postgres\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)\n"
+    },
+    {
+      "category": "API",
+      "test": "FastAPI Imports",
+      "status": "PASS",
+      "message": "API modules imported successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "TestClient Creation",
+      "status": "PASS",
+      "message": "Test client created successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Health Endpoint",
+      "status": "FAIL",
+      "message": "Expected 200, got 400",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Authentication Required",
+      "status": "FAIL",
+      "message": "Expected 401, got 400",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Script Generator",
+      "status": "PASS",
+      "message": "ScriptGenerator imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "TTS Engine",
+      "status": "PASS",
+      "message": "TTSEngine imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Video Assembler",
+      "status": "PASS",
+      "message": "VideoAssembler imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Asset Scraper",
+      "status": "PASS",
+      "message": "ScraperManager imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Uploader",
+      "status": "FAIL",
+      "message": "cannot import name 'YouTubeUploader' from 'src.services.youtube_uploader' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\__init__.py)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 480, in test_youtube\n    from src.services.youtube_uploader import YouTubeUploader\nImportError: cannot import name 'YouTubeUploader' from 'src.services.youtube_uploader' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\__init__.py)\n"
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Analytics",
+      "status": "FAIL",
+      "message": "cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 502, in test_youtube\n    from src.services.youtube_uploader.analytics import YouTubeAnalytics\nImportError: cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)\n"
+    },
+    {
+      "category": "MCP Servers",
+      "test": "YouTube Analytics Server",
+      "status": "FAIL",
+      "message": "cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 526, in test_mcp_servers\n    from src.mcp_servers.youtube_analytics_server import YouTubeAnalyticsMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 9, in <module>\n    from .youtube_analytics_server import YouTubeAnalyticsMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\youtube_analytics_server.py\", line 31, in <module>\n    from src.services.youtube_uploader.analytics import YouTubeAnalytics\nImportError: cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)\n"
+    },
+    {
+      "category": "MCP Servers",
+      "test": "Video Pipeline Server",
+      "status": "FAIL",
+      "message": "cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 539, in test_mcp_servers\n    from src.mcp_servers.video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 9, in <module>\n    from .youtube_analytics_server import YouTubeAnalyticsMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\youtube_analytics_server.py\", line 31, in <module>\n    from src.services.youtube_uploader.analytics import YouTubeAnalytics\nImportError: cannot import name 'YouTubeAnalytics' from 'src.services.youtube_uploader.analytics' (C:\\FacelessYouTube\\src\\services\\youtube_uploader\\analytics.py)\n"
+    },
+    {
+      "category": "AI Integration",
+      "test": "Claude Client",
+      "status": "SKIP",
+      "message": "ANTHROPIC_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Gemini Client",
+      "status": "SKIP",
+      "message": "GOOGLE_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Grok Client",
+      "status": "SKIP",
+      "message": "XAI_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "Existing Tests",
+      "test": "Full Test Suite",
+      "status": "FAIL",
+      "message": "Some tests failed (exit code: 2)",
+      "error": "port(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\nvenv\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:186: in exec_module\n    exec(co, module.__dict__)\ntests\\e2e\\test_youtube_upload_workflow.py:17: in <module>\n    from src.core.models import User, Video, VideoStatus, YouTubeAccount, UploadJob\nE   ImportError: cannot import name 'YouTubeAccount' from 'src.core.models' (C:\\FacelessYouTube\\src\\core\\models.py)\n=========================== short test summary info ===========================\nERROR tests/e2e/test_youtube_upload_workflow.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n======================== 20 warnings, 1 error in 6.80s ========================\n"
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 15,
+    "failed": 10,
+    "skipped": 3
+  }
+}

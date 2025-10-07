@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-10-06T15:51:18.101317",
+  "tests": [
+    {
+      "category": "Environment",
+      "test": "ENV File Exists",
+      "status": "PASS",
+      "message": ".env file found",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable JWT_SECRET_KEY",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_HOST",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PORT",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_NAME",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_USER",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Environment",
+      "test": "Variable DB_PASSWORD",
+      "status": "PASS",
+      "message": "Set and configured",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "PostgreSQL Connection",
+      "status": "PASS",
+      "message": "Successfully connected to PostgreSQL",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Models Import",
+      "status": "PASS",
+      "message": "All models imported successfully",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "Database Tables",
+      "status": "PASS",
+      "message": "All 4 required tables exist",
+      "error": ""
+    },
+    {
+      "category": "Database",
+      "test": "CRUD Operations",
+      "status": "PASS",
+      "message": "Create, Read, Update, Delete all successful",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "FastAPI Imports",
+      "status": "PASS",
+      "message": "API modules imported successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "TestClient Creation",
+      "status": "PASS",
+      "message": "Test client created successfully",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Health Endpoint",
+      "status": "PASS",
+      "message": "Status: 200",
+      "error": ""
+    },
+    {
+      "category": "API",
+      "test": "Authentication Required",
+      "status": "FAIL",
+      "message": "Expected 401, got 404",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Script Generator",
+      "status": "PASS",
+      "message": "ScriptGenerator imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "TTS Engine",
+      "status": "PASS",
+      "message": "TTSEngine imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Video Assembler",
+      "status": "PASS",
+      "message": "VideoAssembler imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "Video Pipeline",
+      "test": "Asset Scraper",
+      "status": "PASS",
+      "message": "ScraperManager imported and initialized",
+      "error": ""
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Uploader",
+      "status": "FAIL",
+      "message": "AuthManager.__init__() got an unexpected keyword argument 'client_secrets_path'",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 493, in test_youtube\n    auth = AuthManager(client_secrets_path=client_secrets)\nTypeError: AuthManager.__init__() got an unexpected keyword argument 'client_secrets_path'\n"
+    },
+    {
+      "category": "YouTube",
+      "test": "YouTube Analytics",
+      "status": "PASS",
+      "message": "AnalyticsTracker imported successfully",
+      "error": ""
+    },
+    {
+      "category": "MCP Servers",
+      "test": "YouTube Analytics Server",
+      "status": "FAIL",
+      "message": "No module named 'src.services.tts_engine'",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 531, in test_mcp_servers\n    from src.mcp_servers.youtube_analytics_server import YouTubeAnalyticsMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 10, in <module>\n    from .video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\video_pipeline_server.py\", line 33, in <module>\n    from src.services.tts_engine import TTSEngine\nModuleNotFoundError: No module named 'src.services.tts_engine'\n"
+    },
+    {
+      "category": "MCP Servers",
+      "test": "Video Pipeline Server",
+      "status": "FAIL",
+      "message": "No module named 'src.services.tts_engine'",
+      "error": "Traceback (most recent call last):\n  File \"C:\\FacelessYouTube\\test_all_components.py\", line 544, in test_mcp_servers\n    from src.mcp_servers.video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\__init__.py\", line 10, in <module>\n    from .video_pipeline_server import VideoPipelineMCPServer\n  File \"C:\\FacelessYouTube\\src\\mcp_servers\\video_pipeline_server.py\", line 33, in <module>\n    from src.services.tts_engine import TTSEngine\nModuleNotFoundError: No module named 'src.services.tts_engine'\n"
+    },
+    {
+      "category": "AI Integration",
+      "test": "Claude Client",
+      "status": "SKIP",
+      "message": "ANTHROPIC_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Gemini Client",
+      "status": "SKIP",
+      "message": "GOOGLE_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "AI Integration",
+      "test": "Grok Client",
+      "status": "SKIP",
+      "message": "XAI_API_KEY not configured",
+      "error": ""
+    },
+    {
+      "category": "Existing Tests",
+      "test": "Full Test Suite",
+      "status": "FAIL",
+      "message": "Some tests failed (exit code: 2)",
+      "error": "port(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\nvenv\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:186: in exec_module\n    exec(co, module.__dict__)\ntests\\e2e\\test_youtube_upload_workflow.py:17: in <module>\n    from src.core.models import User, Video, VideoStatus, YouTubeAccount, UploadJob\nE   ImportError: cannot import name 'YouTubeAccount' from 'src.core.models' (C:\\FacelessYouTube\\src\\core\\models.py)\n=========================== short test summary info ===========================\nERROR tests/e2e/test_youtube_upload_workflow.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n======================== 20 warnings, 1 error in 8.23s ========================\n"
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 20,
+    "failed": 5,
+    "skipped": 3
+  }
+}

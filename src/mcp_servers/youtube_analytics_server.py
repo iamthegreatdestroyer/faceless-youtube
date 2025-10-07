@@ -28,9 +28,9 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.services.youtube_uploader.analytics import YouTubeAnalytics
-from src.database.models import Video, YouTubeAccount
-from src.database.database import SessionLocal
+from src.services.youtube_uploader import AnalyticsTracker
+from src.core.models import Video, User
+from src.core.database import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("youtube-analytics-mcp")
@@ -364,19 +364,19 @@ class YouTubeAnalyticsMCPServer:
             return {"error": "Video not found"}
         
         # Get YouTube account
-        if not video.youtube_account_id:
-            return {"error": "No YouTube account associated"}
+        if not video.user_id:
+            return {"error": "No user associated"}
         
-        account = self.db.query(YouTubeAccount).filter(
-            YouTubeAccount.id == video.youtube_account_id
+        account = self.db.query(User).filter(
+            User.id == video.user_id
         ).first()
         
         if not account:
-            return {"error": "YouTube account not found"}
+            return {"error": "User not found"}
         
         # Initialize analytics service
         if not self.analytics:
-            self.analytics = YouTubeAnalytics(self.db)
+            self.analytics = AnalyticsTracker(self.db)
         
         # Fetch analytics
         try:
@@ -393,11 +393,11 @@ class YouTubeAnalyticsMCPServer:
         """Fetch channel-level analytics"""
         
         if not self.analytics:
-            self.analytics = YouTubeAnalytics(self.db)
+            self.analytics = AnalyticsTracker(self.db)
         
         try:
             # Get first YouTube account (assuming single account for now)
-            account = self.db.query(YouTubeAccount).first()
+            account = self.db.query(User).first()
             
             if not account:
                 return {"error": "No YouTube account found"}

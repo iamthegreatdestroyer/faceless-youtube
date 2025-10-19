@@ -1,0 +1,5 @@
+# Development-only dependencies for setup and test helpers
+questionary>=1.13.0
+pytest>=7.4.3
+pytest-asyncio>=0.21.1
+pytest-cov>=4.1.0

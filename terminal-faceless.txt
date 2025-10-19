@@ -31,4 +31,4 @@ Traceback (most recent call last):
   File "C:\FacelessYouTube\src\services\youtube_uploader\auth_manager.py", line 21, in 
     from google.auth.transport.requests import Request
 ModuleNotFoundError: No module named 'google'
-(venv) PS C:\FacelessYouTube>"
+(venv) PS C:\FacelessYouTube>

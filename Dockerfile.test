@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+# Install system packages including ffmpeg required for video tests
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ffmpeg \
+    build-essential \
+    libpq-dev \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only requirements first to leverage layer caching
+COPY requirements.txt /app/requirements.txt
+
+# Install Python dependencies (core + testing helpers). This will be
+# intentionally broad to ensure tests have required packages available.
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir pytest pytest-asyncio pytest-cov httpx
+
+# Copy the repository
+COPY . /app
+
+ENV PYTHONPATH=/app
+
+CMD ["/bin/bash"]

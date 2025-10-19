@@ -53,6 +53,7 @@ def cleanup_test_files():
 
 
 @pytest.mark.e2e
+@pytest.mark.ffmpeg
 @pytest.mark.asyncio
 async def test_full_video_generation_workflow(test_user, db: Session, cleanup_test_files):
     """
@@ -185,6 +186,7 @@ async def test_full_video_generation_workflow(test_user, db: Session, cleanup_te
 
 
 @pytest.mark.e2e
+@pytest.mark.ffmpeg
 @pytest.mark.asyncio
 async def test_video_generation_with_multiple_assets(test_user, db: Session, cleanup_test_files):
     """
@@ -241,6 +243,7 @@ async def test_video_generation_with_multiple_assets(test_user, db: Session, cle
 
 
 @pytest.mark.e2e
+@pytest.mark.ffmpeg
 @pytest.mark.asyncio
 async def test_video_generation_error_handling(test_user, db: Session):
     """

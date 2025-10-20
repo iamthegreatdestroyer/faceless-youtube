@@ -948,7 +948,9 @@ async def schedule_video(
     # test environment), return an empty list rather than a server error so
     # smoke tests can run without the full scheduler implementation.
     if not content_scheduler:
-        return []
+        # Return an empty mapping consistent with the declared response_model
+        # so that callers receive a valid JSON object instead of a 500.
+        return {}
     
     try:
         job_id = await content_scheduler.schedule_video(

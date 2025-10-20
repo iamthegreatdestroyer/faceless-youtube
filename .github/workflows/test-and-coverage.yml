@@ -1,0 +1,32 @@
+name: Test and Coverage
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Compose
+              run: |
+                  docker compose version || true
+
+            - name: Start services with docker-compose
+              run: |
+                  docker-compose -f docker-compose.test.yml up -d --build
+
+            - name: Run tests and coverage in test-runner
+              run: |
+                  docker-compose -f docker-compose.test.yml run --rm test-runner \
+                    pytest --maxfail=1 --disable-warnings --cov=src --cov-fail-under=60
+
+            - name: Tear down services
+              if: always()
+              run: |
+                  docker-compose -f docker-compose.test.yml down --remove-orphans

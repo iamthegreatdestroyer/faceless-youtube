@@ -3,16 +3,16 @@
 This document contains an audit of tests that are currently skipped or guarded
 in the test-suite and a plan to enable them in a containerized test environment.
 
-## Summary
+## Summary (updated 2025-10-20)
 
 - Files scanned: `tests/` folder
-- Total explicit runtime skips found in this repository snapshot: 3
-  - `pytest.skip(...)` calls: 3
-  - Informational print-based skips: 2
+- Total explicit runtime skips observed during the latest full test run: 2
+  - Both skips are FFmpeg-dependent E2E tests (see details below)
 
-> Note: The original task specification referenced 34 skipped tests. This
-> repository snapshot includes fewer explicit skips; however many tests are
-> marked as `e2e` or `integration` and may be conditionally skipped in CI.
+Note: Earlier audits reported more conditional skips; after enabling the
+containerized test-runner and adding targeted unit tests the explicit
+runtime skips have been reduced. Many heavier E2E/integration tests remain
+guarded and should be enabled selectively in CI using environment flags.
 
 ## By Category
 

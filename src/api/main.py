@@ -84,7 +84,7 @@ except ImportError:
     ContentSlot = None
 
 # Database imports
-from src.core.database import SessionLocal, get_db
+from src.core.database import get_db
 from src.core.models import Video, VideoStatus, User
 
 logger = logging.getLogger(__name__)
@@ -963,10 +963,12 @@ async def schedule_video(
         )
         
         # Notify WebSocket clients
+        # Broadcast job creation using the requested topic (not the
+        # Request object which has no `topic` attribute).
         await broadcast_update({
             "type": "job_created",
             "job_id": job_id,
-            "topic": request.topic
+            "topic": job_request.topic
         })
         
         return {"job_id": job_id, "status": "scheduled"}
@@ -1167,6 +1169,10 @@ async def create_recurring_schedule(request: CreateRecurringRequest):
         
         return {"job_id": job_id, "status": "created"}
     
+    except HTTPException:
+        # Preserve explicitly raised HTTPException responses (e.g. 400s)
+        # instead of converting them into 500 errors.
+        raise
     except Exception as e:
         logger.error(f"Failed to create recurring schedule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1208,6 +1214,9 @@ async def pause_recurring_schedule(job_id: str):
     
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to pause recurring schedule: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/recurring/{job_id}/resume")
@@ -1222,6 +1231,9 @@ async def resume_recurring_schedule(job_id: str):
     
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to resume recurring schedule: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/api/recurring/{job_id}")
@@ -1236,6 +1248,9 @@ async def delete_recurring_schedule(job_id: str):
     
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to delete recurring schedule: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ===================================================================

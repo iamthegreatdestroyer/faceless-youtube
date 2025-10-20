@@ -26,42 +26,43 @@ except ImportError:
     JSON_LOGGER_AVAILABLE = False
 
 
-class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    """Custom JSON formatter with additional fields"""
-    
-    def add_fields(
-        self,
-        log_record: Dict[str, Any],
-        record: logging.LogRecord,
-        message_dict: Dict[str, Any]
-    ) -> None:
-        """
-        Add custom fields to log record
+if JSON_LOGGER_AVAILABLE:
+    class CustomJsonFormatter(jsonlogger.JsonFormatter):
+        """Custom JSON formatter with additional fields"""
         
-        Args:
-            log_record: Dictionary to populate with log data
-            record: Original logging record
-            message_dict: Additional message data
-        """
-        super().add_fields(log_record, record, message_dict)
-        
-        # Add standard fields
-        log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
-        log_record['level'] = record.levelname
-        log_record['logger'] = record.name
-        log_record['module'] = record.module
-        log_record['function'] = record.funcName
-        log_record['line'] = record.lineno
-        
-        # Add extra fields if present
-        if hasattr(record, 'user_id'):
-            log_record['user_id'] = record.user_id
-        if hasattr(record, 'request_id'):
-            log_record['request_id'] = record.request_id
-        if hasattr(record, 'duration_ms'):
-            log_record['duration_ms'] = record.duration_ms
-        if hasattr(record, 'event'):
-            log_record['event'] = record.event
+        def add_fields(
+            self,
+            log_record: Dict[str, Any],
+            record: logging.LogRecord,
+            message_dict: Dict[str, Any]
+        ) -> None:
+            """
+            Add custom fields to log record
+            
+            Args:
+                log_record: Dictionary to populate with log data
+                record: Original logging record
+                message_dict: Additional message data
+            """
+            super().add_fields(log_record, record, message_dict)
+            
+            # Add standard fields
+            log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
+            log_record['level'] = record.levelname
+            log_record['logger'] = record.name
+            log_record['module'] = record.module
+            log_record['function'] = record.funcName
+            log_record['line'] = record.lineno
+            
+            # Add extra fields if present
+            if hasattr(record, 'user_id'):
+                log_record['user_id'] = record.user_id
+            if hasattr(record, 'request_id'):
+                log_record['request_id'] = record.request_id
+            if hasattr(record, 'duration_ms'):
+                log_record['duration_ms'] = record.duration_ms
+            if hasattr(record, 'event'):
+                log_record['event'] = record.event
 
 
 def setup_logging(

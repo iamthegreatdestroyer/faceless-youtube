@@ -431,15 +431,17 @@ class VideoUploader:
         
         youtube = await self.auth_manager.get_youtube_client(account_name)
         
-        # Upload thumbnail
-        await asyncio.to_thread(
+        # Upload thumbnail: build the request in a thread and execute it
+        req = await asyncio.to_thread(
             youtube.thumbnails().set,
             videoId=video_id,
             media_body=MediaFileUpload(
                 str(thumbnail_path),
-                mimetype=self._get_mimetype(thumbnail_path)
-            )
-        ).execute()
+                mimetype=self._get_mimetype(thumbnail_path),
+            ),
+        )
+
+        await asyncio.to_thread(req.execute)
         
         # Thumbnail URL
         thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/maxresdefault.jpg"
@@ -464,7 +466,7 @@ class VideoUploader:
                 continue
             
             try:
-                await asyncio.to_thread(
+                req = await asyncio.to_thread(
                     youtube.captions().insert,
                     part="snippet",
                     body={
@@ -472,14 +474,15 @@ class VideoUploader:
                             "videoId": video_id,
                             "language": language,
                             "name": name,
-                            "isDraft": False
+                            "isDraft": False,
                         }
                     },
                     media_body=MediaFileUpload(
-                        str(caption_file),
-                        mimetype="application/octet-stream"
-                    )
-                ).execute()
+                        str(caption_file), mimetype="application/octet-stream"
+                    ),
+                )
+
+                await asyncio.to_thread(req.execute)
                 
                 logger.info(f"Caption uploaded: {language}")
             except Exception as e:
@@ -507,11 +510,11 @@ class VideoUploader:
             }
         }
         
-        await asyncio.to_thread(
-            youtube.videos().update,
-            part="snippet,status",
-            body=body
-        ).execute()
+        req = await asyncio.to_thread(
+            youtube.videos().update, part="snippet,status", body=body
+        )
+
+        await asyncio.to_thread(req.execute)
         
         logger.info(f"Metadata updated for video {video_id}")
     
@@ -519,10 +522,8 @@ class VideoUploader:
         """Delete video"""
         youtube = await self.auth_manager.get_youtube_client(account_name)
         
-        await asyncio.to_thread(
-            youtube.videos().delete,
-            id=video_id
-        ).execute()
+        req = await asyncio.to_thread(youtube.videos().delete, id=video_id)
+        await asyncio.to_thread(req.execute)
         
         logger.info(f"Video deleted: {video_id}")
     
@@ -549,11 +550,11 @@ class VideoUploader:
         if position is not None:
             body["snippet"]["position"] = position
         
-        await asyncio.to_thread(
-            youtube.playlistItems().insert,
-            part="snippet",
-            body=body
-        ).execute()
+        req = await asyncio.to_thread(
+            youtube.playlistItems().insert, part="snippet", body=body
+        )
+
+        await asyncio.to_thread(req.execute)
         
         logger.info(f"Video {video_id} added to playlist {playlist_id}")
     
@@ -577,12 +578,14 @@ class VideoUploader:
             }
         }
         
-        response = await asyncio.to_thread(
+        req = await asyncio.to_thread(
             youtube.playlists().insert,
             part="snippet,status",
-            body=body
-        ).execute()
-        
+            body=body,
+        )
+
+        response = await asyncio.to_thread(req.execute)
+
         playlist_id = response["id"]
         logger.info(f"Playlist created: {playlist_id} - {title}")
         return playlist_id
@@ -595,11 +598,13 @@ class VideoUploader:
         """Get video processing status"""
         youtube = await self.auth_manager.get_youtube_client(account_name)
         
-        response = await asyncio.to_thread(
+        req = await asyncio.to_thread(
             youtube.videos().list,
             part="status,processingDetails",
-            id=video_id
-        ).execute()
+            id=video_id,
+        )
+
+        response = await asyncio.to_thread(req.execute)
         
         if not response.get("items"):
             raise ValueError(f"Video not found: {video_id}")

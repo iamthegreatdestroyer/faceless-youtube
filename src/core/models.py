@@ -566,3 +566,24 @@ class Revenue(Base):
     
     def __repr__(self):
         return f"<Revenue(amount={self.amount}, type='{self.revenue_type}', earned_at={self.earned_at})>"
+
+
+    # Minimal Job model used by performance and smoke tests
+    class Job(Base):
+        """Lightweight Job table used by performance and smoke tests.
+
+        Tests perform simple counts/queries against a `jobs` table; this
+        model provides the table so `init_db()` creates it in test
+        environments.
+        """
+        __tablename__ = "jobs"
+
+        id = Column(Integer, primary_key=True)
+        topic = Column(String(255), nullable=False, default="")
+        status = Column(String(50), nullable=False, default="queued", index=True)
+        scheduled_at = Column(DateTime)
+        created_at = Column(DateTime, default=func.now(), nullable=False)
+
+        def __repr__(self):
+            return f"<Job(id={self.id}, topic='{self.topic}', status='{self.status}')>"
+

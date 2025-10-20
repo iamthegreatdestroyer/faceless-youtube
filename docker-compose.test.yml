@@ -9,6 +9,46 @@ services:
     volumes:
       - ./:/app:cached
     working_dir: /app
+    entrypoint: |
+      /bin/bash -c "
+      echo '⏳ Waiting for services...'
+
+      # Wait for PostgreSQL
+      for i in {1..60}; do
+        pg_isready -h test-postgres -U test_user -d faceless_test && break
+        sleep 1
+      done
+
+      # Wait for MongoDB (port check using nc)
+      for i in {1..60}; do
+        nc -z test-mongodb 27017 && break || sleep 1
+      done
+
+      # Wait for Redis
+      for i in {1..60}; do
+        redis-cli -h test-redis ping && break
+        sleep 1
+      done
+
+      # Wait for API server
+      for i in {1..60}; do
+        curl -fsS http://api-staging:8000/health && break || sleep 1
+      done
+
+      # Wait for Dashboard (static)
+      for i in {1..60}; do
+        curl -fsS http://dashboard-staging:3000/ && break || sleep 1
+      done
+
+      echo '✓ All services ready'
+
+      # If caller explicitly passed a pytest command, execute it as-is.
+      if [ "$${1:-}" = "pytest" ]; then
+        exec "$${@}"
+      else
+        exec pytest tests/ "$${@}"
+      fi
+      "
     environment:
       - POSTGRES_HOST=test-postgres
       - POSTGRES_PORT=5432
@@ -19,10 +59,17 @@ services:
       - MONGO_PORT=27017
       - REDIS_HOST=test-redis
       - FFMPEG_AVAILABLE=1
+      - ENVIRONMENT=staging
+      - DATABASE_URL=postgresql+psycopg2://test_user:test_password@test-postgres:5432/faceless_test
+      - MONGODB_URI=mongodb://root:pass@test-mongodb:27017/?authSource=admin
+      - REDIS_URL=redis://test-redis:6379/0
+      - TEST_MODE=true
     depends_on:
       - test-postgres
       - test-mongodb
       - test-redis
+      - api-staging
+      - dashboard-staging
     networks:
       - test-network
 
@@ -53,8 +100,52 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: pass
     ports:
       - "27017:27017"
+    # Rely on the test-runner's port-based readiness check instead of a
+    # container-level mongosh healthcheck to avoid requiring additional
+    # tooling inside the mongo image. The test-runner will verify the
+    # database is reachable before running tests.
     networks:
       - test-network
+
+  api-staging:
+    image: faceless-youtube-test-runner:latest
+    container_name: api-staging
+    working_dir: /app
+    command:
+      ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      - ENVIRONMENT=staging
+      - DATABASE_URL=postgresql+psycopg2://test_user:test_password@test-postgres:5432/faceless_test
+      - MONGODB_URI=mongodb://root:pass@test-mongodb:27017/?authSource=admin
+      - REDIS_URL=redis://test-redis:6379/0
+      - TEST_MODE=false
+      - ALLOWED_HOSTS=*
+    depends_on:
+      - test-postgres
+      - test-mongodb
+      - test-redis
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  dashboard-staging:
+    image: python:3.11-alpine
+    container_name: dashboard-staging
+    working_dir: /dashboard
+    command: sh -c "mkdir -p /dashboard && echo '<!DOCTYPE html><html><body><h1>Dashboard</h1></body></html>' > /dashboard/index.html && python -m http.server 3000 --directory /dashboard"
+    ports:
+      - "3000:3000"
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   test-redis:
     image: redis:7-alpine

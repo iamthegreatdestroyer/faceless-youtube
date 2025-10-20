@@ -90,7 +90,15 @@ class VideoScheduleRequest(BaseModel):
     @classmethod
     def sanitize_title(cls, v: str) -> str:
         """Remove HTML tags and dangerous characters from title"""
-        # Remove HTML/XML tags
+        # Remove script tags and their content first (prevent XSS payloads)
+        v = re.sub(
+            r'<script[^>]*>.*?</script>',
+            '',
+            v,
+            flags=re.DOTALL | re.IGNORECASE,
+        )
+
+        # Remove remaining HTML/XML tags
         v = re.sub(r'<[^>]+>', '', v)
         # Remove excessive whitespace
         v = ' '.join(v.split())

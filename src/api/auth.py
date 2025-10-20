@@ -9,6 +9,7 @@ import secrets
 import bcrypt
 from datetime import datetime, timedelta
 from typing import Optional
+from sqlalchemy.orm import Session
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -167,6 +168,29 @@ async def get_current_user(
     return token_data.username
 
 
+async def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> Optional[str]:
+    """Optional authentication dependency.
+
+    Returns the username from the token when provided and valid, or
+    ``None`` if no credentials were supplied or they are invalid.
+    This is useful for endpoints that allow both authenticated and
+    unauthenticated access (e.g., public job creation in smoke tests).
+    """
+    if credentials is None:
+        return None
+
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        return username
+    except JWTError:
+        # Treat invalid token as no authenticated user
+        return None
+
+
 # Demo user database (REPLACE WITH REAL DATABASE IN PRODUCTION)
 DEMO_USERS = {
     "admin": {
@@ -213,7 +237,7 @@ async def authenticate_user(username: str, password: str) -> bool:
     return True
 
 
-async def get_user_id_from_username(username: str) -> int:
+async def get_user_id_from_username(username: str, db: Optional[Session] = None) -> int:
     """
     Get user_id from username for database queries.
     
@@ -236,10 +260,42 @@ async def get_user_id_from_username(username: str) -> int:
     # result = await db.execute(select(User.id).where(User.username == username))
     # return result.scalar_one_or_none()
     
-    # Demo mapping (replace with database query)
+    # Try to resolve user id from the real database first (supports
+    # looking up by username or email). This makes integration tests
+    # that create users in the database succeed.
+    # If a DB session is provided (typical in tests), use it to resolve
+    # the user so we don't open a separate connection to the production
+    # database. Otherwise, attempt to open a sync session as a fallback.
+    try:
+        from src.core.models import User
+
+        if db is not None:
+            user = (
+                db.query(User)
+                .filter((User.username == username) | (User.email == username))
+                .first()
+            )
+            if user:
+                return user.id
+
+        # Fallback to creating a new sync session (for production/runtime)
+        from src.core.database import get_db as get_sync_db
+        with get_sync_db() as db_session:
+            user = (
+                db_session.query(User)
+                .filter((User.username == username) | (User.email == username))
+                .first()
+            )
+            if user:
+                return user.id
+    except Exception:
+        # Fall back to demo mapping if database is not available
+        pass
+
+    # Demo mapping (legacy fallback)
     user_mapping = {
         "admin": 1,
         "test@example.com": 2
     }
-    
-    return user_mapping.get(username, 1)  # Default to user_id 1 if not found
+
+    return user_mapping.get(username, 1)

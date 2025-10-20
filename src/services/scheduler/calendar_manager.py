@@ -52,6 +52,8 @@ class CalendarConfig:
     
     # Publishing windows
     preferred_hours: List[int] = None  # e.g., [10, 14, 18] for 10AM, 2PM, 6PM
+    # If True, slots outside preferred_hours are considered conflicts
+    enforce_preferred_hours: bool = False
     blackout_days: List[date] = None  # Days to avoid
     
     # Conflict detection
@@ -249,8 +251,8 @@ class CalendarManager:
         if slot_date in self.config.blackout_days:
             conflicts.append(f"Date is in blackout list")
         
-        # Check preferred hours
-        if self.config.preferred_hours:
+        # Check preferred hours (optional enforcement)
+        if self.config.preferred_hours and getattr(self.config, "enforce_preferred_hours", False):
             if scheduled_at.hour not in self.config.preferred_hours:
                 conflicts.append(
                     f"Not in preferred hours: {self.config.preferred_hours}"

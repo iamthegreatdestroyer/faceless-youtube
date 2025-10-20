@@ -31,6 +31,69 @@ except Exception:  # pragma: no cover - interactive dependency
     questionary = None
 
 
+def _q_print(message: str) -> None:
+    """Print using questionary when available, otherwise fallback.
+
+    This keeps calling sites simple and avoids repeating checks.
+    """
+    if questionary:
+        try:
+            questionary.print(message)
+            return
+        except Exception:
+            pass
+    print(message)
+
+
+def _q_text(prompt: str, default: Optional[str] = None) -> str:
+    """Ask for free-text input using questionary or input()."""
+    if questionary:
+        try:
+            return questionary.text(prompt, default=default).ask() or (default or '')
+        except Exception:
+            pass
+
+    default_display = f" [{default}]" if default else ''
+    return input(f"{prompt}{default_display}: ").strip() or (default or '')
+
+
+def _q_select(prompt: str, choices: List[str], default: Optional[str] = None) -> str:
+    """Prompt the user to select an option from a list.
+
+    Falls back to a numbered prompt when questionary is unavailable.
+    """
+    if questionary:
+        try:
+            return questionary.select(prompt, choices=choices).ask() or (default or choices[-1])
+        except Exception:
+            pass
+
+    print(prompt)
+    for i, c in enumerate(choices, start=1):
+        print(f"  {i}. {c}")
+    sel = input(f"Enter number (default {default or len(choices)}): ").strip() or ''
+    try:
+        idx = int(sel) - 1
+        return choices[idx]
+    except Exception:
+        return default or choices[-1]
+
+
+def _q_confirm(prompt: str, default: bool = False) -> bool:
+    """Ask a yes/no question, returning True/False."""
+    if questionary:
+        try:
+            return questionary.confirm(prompt, default=default).ask()
+        except Exception:
+            pass
+
+    default_str = 'Y/n' if default else 'y/N'
+    resp = input(f"{prompt} [{default_str}]: ").strip().lower()
+    if resp == '':
+        return default
+    return resp in ('y', 'yes')
+
+
 @dataclass
 class EnvironmentReport:
     os: str
@@ -50,7 +113,6 @@ class EnvironmentDetector:
     
     def detect_os(self) -> str:
         """Detect operating system: Windows, macOS, or Linux."""
-        import platform
         system = platform.system()
         if system == 'Darwin':
             return 'macOS'
@@ -61,15 +123,14 @@ class EnvironmentDetector:
     
     def detect_python_version(self) -> str:
         """Check Python version and return version string."""
-        import sys
-        return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        v = sys.version_info
+        return f"{v.major}.{v.minor}.{v.micro}"
     
     def detect_docker(self) -> bool:
         """Check if Docker and docker-compose are installed."""
-        import shutil
         docker_exists = shutil.which('docker') is not None
         compose_exists = (
-            shutil.which('docker-compose') is not None or 
+            shutil.which('docker-compose') is not None or
             shutil.which('docker') is not None  # docker compose (v2)
         )
         return docker_exists and compose_exists
@@ -92,7 +153,6 @@ class EnvironmentDetector:
     
     def check_internet_connection(self) -> bool:
         """Verify internet connectivity for GitHub/Docker Hub access."""
-        import socket
         try:
             socket.create_connection(('1.1.1.1', 53), timeout=2)
             return True
@@ -101,7 +161,6 @@ class EnvironmentDetector:
     
     def _check_port_open(self, host: str, port: int, timeout: int = 1) -> bool:
         """Helper to check if a port is open on localhost."""
-        import socket
         try:
             sock = socket.create_connection((host, port), timeout=timeout)
             sock.close()
@@ -119,9 +178,8 @@ class EnvironmentDetector:
             'mongodb_running': self.detect_mongodb(),
             'redis_running': self.detect_redis(),
             'ollama_running': self.detect_ollama(),
-            'internet_available': self.check_internet_connection()
+            'internet_available': self.check_internet_connection(),
         }
-        return report
 
 
 @dataclass
@@ -150,32 +208,26 @@ class InteractiveWizard:
     
     def welcome_screen(self, env_report: dict) -> None:
         """Display welcome and environment summary."""
-        import questionary
-        
-        questionary.print(
+        msg = (
             f"\n🎉 Welcome to Faceless YouTube Setup Wizard\n"
             f"   Platform: {env_report['os']}\n"
             f"   Python: {env_report['python_version']}\n"
             f"   Docker: {'✓' if env_report['docker_available'] else '✗'}\n"
             f"   Internet: {'✓' if env_report['internet_available'] else '✗'}\n"
         )
+
+        _q_print(msg)
     
     def select_deployment_mode(self) -> str:
         """Prompt user to select deployment mode."""
-        import questionary
-        
         choices = [
             'Docker Full Stack (recommended)',
             'Local Services (advanced)',
             'Hybrid (Docker + Local)',
             'Development (default)'
         ]
-        
-        answer = questionary.select(
-            'Select deployment mode:',
-            choices=choices
-        ).ask()
-        
+        answer = _q_select('Select deployment mode:', choices, default='Development (default)')
+
         # Map display names to enum values
         mode_map = {
             'Docker Full Stack (recommended)': 'docker',
@@ -187,18 +239,10 @@ class InteractiveWizard:
     
     def configure_docker_mode(self) -> dict:
         """Configure Docker deployment options."""
-        import questionary
-        
-        memory = questionary.text(
-            'Memory limit for containers (e.g., 2g):',
-            default='2g'
-        ).ask()
-        
-        cpu = questionary.text(
-            'CPU limit for containers (e.g., 2):',
-            default='2'
-        ).ask()
-        
+        # Use questionary if available, otherwise fallback to input()
+        memory = _q_text('Memory limit for containers (e.g., 2g):', default='2g')
+        cpu = _q_text('CPU limit for containers (e.g., 2):', default='2')
+
         return {
             'mode': 'docker',
             'memory': memory,
@@ -209,82 +253,69 @@ class InteractiveWizard:
                 'frontend': 3000,
                 'postgres': 5432,
                 'mongodb': 27017,
-                'redis': 6379
-            }
+                'redis': 6379,
+            },
         }
     
     def configure_local_mode(self) -> dict:
         """Configure local deployment options."""
-        import questionary
-        
-        questionary.print("\n📝 Validating local services...")
+        _q_print("\n📝 Validating local services...")
         detector = EnvironmentDetector()
-        
+
+        # Prompt for local connection settings using the helper wrapper
         config = {
             'mode': 'local',
-            'postgres_host': questionary.text(
-                'PostgreSQL host:',
-                default='localhost'
-            ).ask(),
-            'postgres_port': questionary.text(
-                'PostgreSQL port:',
-                default='5432'
-            ).ask(),
-            'mongodb_host': questionary.text(
-                'MongoDB host:',
-                default='localhost'
-            ).ask(),
-            'mongodb_port': questionary.text(
-                'MongoDB port:',
-                default='27017'
-            ).ask(),
-            'redis_host': questionary.text(
-                'Redis host:',
-                default='localhost'
-            ).ask(),
-            'redis_port': questionary.text(
-                'Redis port:',
-                default='6379'
-            ).ask(),
+            'postgres_host': _q_text('PostgreSQL host:', default='localhost'),
+            'postgres_port': _q_text('PostgreSQL port:', default='5432'),
+            'mongodb_host': _q_text('MongoDB host:', default='localhost'),
+            'mongodb_port': _q_text('MongoDB port:', default='27017'),
+            'redis_host': _q_text('Redis host:', default='localhost'),
+            'redis_port': _q_text('Redis port:', default='6379'),
         }
+
+        # Quick detection summary
+        try:
+            pg_ok = detector.detect_postgresql()
+            mongo_ok = detector.detect_mongodb()
+            redis_ok = detector.detect_redis()
+        except Exception:
+            pg_ok = mongo_ok = redis_ok = False
+
+        summary = (
+            f"Detected services -> Postgres: {'yes' if pg_ok else 'no'}, "
+            f"MongoDB: {'yes' if mongo_ok else 'no'}, Redis: {'yes' if redis_ok else 'no'}"
+        )
+        _q_print(summary)
+
         return config
     
     def collect_api_credentials(self) -> dict:
         """Collect YouTube OAuth and other API credentials."""
-        import questionary
-        import os
-        import json
-        
-        has_youtube = questionary.confirm(
-            'Do you have YouTube OAuth credentials?'
-        ).ask()
+        # Use questionary where available, otherwise fallback to input()
+        has_youtube = _q_confirm('Do you have YouTube OAuth credentials?', default=False)
         
         credentials = {}
         
         if has_youtube:
-            creds_path = questionary.text(
-                'Path to YouTube OAuth JSON file:',
-                default=os.path.expanduser('~/.youtube_oauth.json')
-            ).ask()
+            creds_path = _q_text('Path to YouTube OAuth JSON file:', default=os.path.expanduser('~/.youtube_oauth.json'))
             
             if os.path.exists(creds_path):
                 try:
                     with open(creds_path, 'r') as f:
                         json.load(f)
                     credentials['youtube_oauth_path'] = creds_path
-                    questionary.print('✓ YouTube OAuth file validated')
+                    _q_print('✓ YouTube OAuth file validated')
                 except (json.JSONDecodeError, IOError) as e:
-                    questionary.print(f'✗ Error reading file: {e}')
+                    _q_print(f'✗ Error reading file: {e}')
             else:
-                questionary.print('✗ File not found. You can add it later.')
+                _q_print('✗ File not found. You can add it later.')
         
         return credentials
     
     def verify_configuration(self, config: dict) -> dict:
         """Test collected configurations."""
-        import questionary
-        
-        questionary.print("\n🔍 Verifying configuration...")
+        # Use questionary for pretty output when available
+        _q_print("\n🔍 Verifying configuration...")
         
         verification = {
             'passed': True,
@@ -293,8 +324,13 @@ class InteractiveWizard:
         }
         
         if config['mode'] == 'docker':
-            # Docker mode is always viable
-            pass
+            # Sanity-check docker availability when the user chooses Docker mode
+            detector = EnvironmentDetector()
+            if not detector.detect_docker():
+                verification['errors'].append(
+                    'Docker not detected on this system. Please install Docker and docker-compose.'
+                )
+                verification['passed'] = False
         elif config['mode'] == 'local':
             # Verify local services
             detector = EnvironmentDetector()
@@ -314,20 +350,19 @@ class InteractiveWizard:
         
         if verification['warnings']:
             for warning in verification['warnings']:
-                questionary.print(f"⚠️  {warning}")
+                _q_print(f"⚠️  {warning}")
         
         if verification['errors']:
             verification['passed'] = False
             for error in verification['errors']:
-                questionary.print(f"❌ {error}")
+                _q_print(f"❌ {error}")
         else:
-            questionary.print("✓ Configuration verified")
+            _q_print("✓ Configuration verified")
         
         return verification
     
     def generate_env_file(self, config: dict) -> None:
         """Generate .env file from configuration."""
-        import os
         from datetime import datetime
         
         env_content = f"""# Generated by setup wizard
@@ -340,7 +375,7 @@ ENVIRONMENT=development
 """
         
         if config['mode'] == 'docker':
-            env_content += f"""DATABASE_URL=postgresql://docker:docker@postgres:5432/faceless_youtube
+            env_content += """DATABASE_URL=postgresql://docker:docker@postgres:5432/faceless_youtube
 MONGODB_URI=mongodb://root:password@mongodb:27017/faceless_youtube
 REDIS_URL=redis://redis:6379/0
 """
@@ -375,22 +410,25 @@ DEBUG=False
             import shutil
             shutil.copy('.env', '.env.bak')
             print("✓ Backed up existing .env to .env.bak")
-        
-        with open('.env', 'w') as f:
+
+        with open('.env', 'w', encoding='utf-8') as f:
             f.write(env_content)
-        
-        # Set restrictive permissions
-        os.chmod('.env', 0o600)
+
+        # Set restrictive permissions where possible
+        try:
+            os.chmod('.env', 0o600)
+        except OSError:
+            print('⚠️ Could not set POSIX permissions on .env; continuing')
         print("✓ Generated .env file")
     
     def display_next_steps(self, mode: str) -> None:
         """Display next steps based on deployment mode."""
-        import questionary
-        
-        questionary.print("\n📚 Next Steps:\n")
-        
+        header = "\n📚 Next Steps:\n"
+
+        _q_print(header)
+
         if mode == 'docker':
-            questionary.print(
+            msg = (
                 "1. Start Docker services:\n"
                 "   docker-compose up -d\n\n"
                 "2. Run the application:\n"
@@ -400,7 +438,7 @@ DEBUG=False
                 "   Dashboard: http://localhost:3000\n"
             )
         else:
-            questionary.print(
+            msg = (
                 "1. Ensure local services are running:\n"
                 "   PostgreSQL, MongoDB, Redis, Ollama\n\n"
                 "2. Run the application:\n"
@@ -409,96 +447,113 @@ DEBUG=False
                 "   uvicorn src.api.main:app --reload\n"
             )
 
+        _q_print(msg)
+
 
 class ConfigurationManager:
-    """Manages configuration generation and validation."""
-    
-    def validate_configuration(self, config: dict) -> dict:
-        """Validate configuration completeness."""
-        required_fields = ['mode']
-        missing = [f for f in required_fields if f not in config]
-        
-        return {
-            'valid': len(missing) == 0,
-            'missing_fields': missing
-        }
-    
-    def write_env_file(self, config: dict, path: str = '.env') -> None:
-        """Write configuration to .env file."""
-        import os
-        from datetime import datetime
-        
-        # Validate first
-        validation = self.validate_configuration(config)
-        if not validation['valid']:
-            raise ValueError(f"Invalid config: {validation['missing_fields']}")
-        
-        # Generate content
-        env_lines = [
-            "# Generated by Faceless YouTube Setup Wizard",
-            f"# Generated: {datetime.now().isoformat()}",
-            "",
-            "ENVIRONMENT=development",
-            ""
-        ]
-        
-        if config['mode'] == 'docker':
-            env_lines.extend([
-                "# Docker Services",
-                "DATABASE_URL=postgresql://docker:docker@postgres:5432/faceless_youtube",
-                "MONGODB_URI=mongodb://root:password@mongodb:27017/faceless_youtube",
-                "REDIS_URL=redis://redis:6379/0",
-                ""
-            ])
-        else:
-            env_lines.extend([
-                "# Local Services",
-                f"DATABASE_URL=postgresql://user:password@{config.get('postgres_host', 'localhost')}:{config.get('postgres_port', 5432)}/faceless_youtube",
-                f"MONGODB_URI=mongodb://root:password@{config.get('mongodb_host', 'localhost')}:{config.get('mongodb_port', 27017)}/faceless_youtube",
-                f"REDIS_URL=redis://{config.get('redis_host', 'localhost')}:{config.get('redis_port', 6379)}/0",
-                ""
-            ])
-        
-        env_lines.extend([
-            "API_HOST=0.0.0.0",
-            "API_PORT=8000",
-            "REACT_APP_API_URL=http://localhost:8000",
-            "OLLAMA_BASE_URL=http://localhost:11434",
-            "OLLAMA_MODEL=llama2",
-            ""
-        ])
-        
-        # Write file
-        if os.path.exists(path):
-            import shutil
-            shutil.copy(path, f"{path}.bak")
-        
-        with open(path, 'w') as f:
-            f.write('\n'.join(env_lines))
-        
-        os.chmod(path, 0o600)
-"""
+    """Manages configuration generation and validation.
+
+    Uses ValidationResult for validation reporting and provides
+    helpers to write a `.env` file and create a minimal
+    docker-compose override for local port mappings.
+    """
 
     def validate_configuration(self, config: Dict[str, str]) -> ValidationResult:
+        """Validate that required configuration keys are present.
+
+        For `local` mode the host/port pairs for PostgreSQL,
+        MongoDB, and Redis are required. For other modes a
+        DATABASE_URL, MONGODB_URI or REDIS_URL may be present
+        and will be validated if provided.
+        """
         errors: List[str] = []
-        required = ["DATABASE_URL", "MONGODB_URI", "REDIS_URL"]
-        for r in required:
-            if not config.get(r):
-                errors.append(f"Missing required configuration: {r}")
+        mode = config.get('mode', 'development')
+
+        if mode == 'local':
+            required = [
+                'postgres_host', 'postgres_port',
+                'mongodb_host', 'mongodb_port',
+                'redis_host', 'redis_port'
+            ]
+            for key in required:
+                if not config.get(key):
+                    errors.append(f"Missing required field: {key}")
+        else:
+            # If explicit connection strings are expected, ensure they exist
+            for key in ('DATABASE_URL', 'MONGODB_URI', 'REDIS_URL'):
+                if key in config and not config.get(key):
+                    errors.append(f"Missing required configuration: {key}")
 
         return ValidationResult(passed=len(errors) == 0, errors=errors)
 
-    def write_env_file(self, config: Dict[str, str], path: str = ".env") -> None:
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        contents = self.ENV_TEMPLATE.format(timestamp=timestamp, **config)
-        if os.path.exists(path):
-            shutil.copy(path, f"{path}.bak")
+    def write_env_file(self, config: Dict[str, str], path: str = '.env') -> None:
+        """Write a `.env` file to disk, backing up any existing file.
 
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(contents)
+        The function is tolerant of platforms without POSIX permissions.
+        """
+        lines: List[str] = [
+            '# Generated by Faceless YouTube Setup Wizard',
+            f"# Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+            '',
+        ]
+
+        # Basic environment
+        lines.append(f"ENVIRONMENT={config.get('mode', 'development')}")
+
+        # Connection strings
+        if config.get('mode') in ('docker', 'hybrid'):
+            lines.extend([
+                'DATABASE_URL=postgresql://docker:docker@postgres:5432/faceless_youtube',
+                'MONGODB_URI=mongodb://root:password@mongodb:27017/faceless_youtube',
+                'REDIS_URL=redis://redis:6379/0',
+            ])
+        else:
+            lines.extend([
+                f"DATABASE_URL={config.get('DATABASE_URL', 'postgresql://user:password@localhost:5432/faceless_youtube')}",
+                f"MONGODB_URI={config.get('MONGODB_URI', 'mongodb://root:password@localhost:27017/faceless_youtube')}",
+                f"REDIS_URL={config.get('REDIS_URL', 'redis://localhost:6379/0')}",
+            ])
+
+        # Common settings
+        lines.extend([
+            '',
+            'API_HOST=0.0.0.0',
+            'API_PORT=8000',
+            'REACT_APP_API_URL=http://localhost:8000',
+            'OLLAMA_BASE_URL=http://localhost:11434',
+            'OLLAMA_MODEL=llama2',
+            '',
+            'LOG_LEVEL=INFO',
+            'DEBUG=False',
+        ])
+
+        # Backup existing file
+        if os.path.exists(path):
+            bak = f"{path}.bak"
+            shutil.copy(path, bak)
+            print(f"✓ Backed up existing {path} to {bak}")
+
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write('\n'.join(lines) + '\n')
+
+        try:
+            os.chmod(path, 0o600)
+        except OSError:
+            # Ignore on platforms that do not support chmod
+            print(f"⚠️ Could not set POSIX permissions on {path}; continuing")
+
+        print(f"✓ Wrote configuration to {path}")
 
     def generate_docker_compose_override(self, config: DockerConfig) -> str:
-        override = f"""version: '3.9'\nservices:\n  api:\n    ports:\n      - \"{config.api_port}:8000\"\n  dashboard:\n    ports:\n      - \"{config.frontend_port}:3000\"\n"""
+        """Generate a minimal docker-compose override YAML snippet
+        that maps API and dashboard ports to host ports.
+        """
+        override = (
+            "version: '3.9'\n"
+            "services:\n"
+            f"  api:\n    ports:\n      - \"{config.api_port}:8000\"\n"
+            f"  dashboard:\n    ports:\n      - \"{config.frontend_port}:3000\"\n"
+        )
         return override
 
 
@@ -537,21 +592,24 @@ class DockerSetupHelper:
 
 
 def main() -> int:
-    """Main wizard orchestration."""
-    import os
-    
+    """Main wizard orchestration.
+
+    Orchestrates environment detection, interactive prompts,
+    verification and file generation. Returns 0 on success and
+    non-zero on failure.
+    """
     try:
         # Phase 1: Environment detection
         detector = EnvironmentDetector()
         env_report = detector.generate_report()
-        
+
         # Phase 2: Welcome screen
         wizard = InteractiveWizard()
         wizard.welcome_screen(env_report)
-        
+
         # Phase 3: Deployment mode selection
         mode = wizard.select_deployment_mode()
-        
+
         # Phase 4: Configuration based on mode
         if mode == 'docker':
             config = wizard.configure_docker_mode()
@@ -561,28 +619,28 @@ def main() -> int:
             config = {
                 'mode': mode,
                 'use_docker': True,
-                'docker_services': ['postgres', 'mongodb', 'redis']
+                'docker_services': ['postgres', 'mongodb', 'redis'],
             }
-        
+
         # Phase 5: API credentials
         api_creds = wizard.collect_api_credentials()
         config.update(api_creds)
-        
+
         # Phase 6: Verification
         verification = wizard.verify_configuration(config)
         if not verification['passed']:
             return 1
-        
+
         # Phase 7: Generate files
         cfg_mgr = ConfigurationManager()
         cfg_mgr.write_env_file(config)
-        
+
         # Phase 8: Display next steps
         wizard.display_next_steps(mode)
-        
+
         print("✅ Setup wizard completed successfully!")
         return 0
-        
+
     except KeyboardInterrupt:
         print("\n⚠️ Setup wizard interrupted by user.")
         return 130

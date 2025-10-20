@@ -9,6 +9,7 @@ uvicorn[standard]>=0.24.0       # ASGI server
 pydantic>=2.9.0                 # Data validation (Py3.13 needs 2.9+)
 python-dotenv>=1.0.0            # Environment variables
 python-multipart>=0.0.6         # File upload support
+slowapi>=0.1.5                  # Rate limiting utilities for FastAPI (used by api/main)
 
 # ============================================
 # DATABASE & ORM (Python 3.13 Compatible)

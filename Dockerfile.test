@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python dependencies and test tooling
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir pytest pytest-asyncio pytest-cov httpx
+# Use requirements-test.txt to exclude GUI dependencies (PyQt6) that require Qt dev libraries
+COPY requirements-test.txt .
+RUN pip install --no-cache-dir -r requirements-test.txt
 
 # Copy application code and tests
 COPY src/ ./src/

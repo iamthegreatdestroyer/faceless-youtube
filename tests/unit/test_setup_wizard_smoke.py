@@ -79,7 +79,7 @@ class TestSetupWizardExecution:
         assert doc_path.exists(), f"SETUP_WIZARD.md not found at {doc_path}"
 
         # Check content
-        with open(doc_path, "r") as f:
+        with open(doc_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         assert "setup.sh" in content or "setup wizard" in content.lower()
@@ -99,7 +99,7 @@ class TestSetupWizardDocumentation:
     def test_setup_wizard_md_content(self, project_root):
         """Test SETUP_WIZARD.md has required sections."""
         doc_path = project_root / "SETUP_WIZARD.md"
-        with open(doc_path, "r") as f:
+        with open(doc_path, "r", encoding="utf-8") as f:
             content = f.read().lower()
 
         required_sections = [
@@ -118,7 +118,7 @@ class TestSetupWizardDocumentation:
     def test_setup_wizard_md_examples(self, project_root):
         """Test SETUP_WIZARD.md contains usage examples."""
         doc_path = project_root / "SETUP_WIZARD.md"
-        with open(doc_path, "r") as f:
+        with open(doc_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Should contain code examples or command examples

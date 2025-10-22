@@ -635,6 +635,25 @@ def main() -> int:
         cfg_mgr = ConfigurationManager()
         cfg_mgr.write_env_file(config)
 
+        # Phase 7b: Generate docker-compose.override.yml for Docker mode
+        if mode == 'docker':
+            docker_config = DockerConfig(
+                memory_mb=int(config.get('memory', '2g').rstrip('g')) * 1024 if 'g' in config.get('memory', '2g') else 4096,
+                cpu_shares=int(config.get('cpu', 2)),
+                api_port=config.get('api_port', 8000),
+                frontend_port=config.get('frontend_port', 3000),
+            )
+            override_content = cfg_mgr.generate_docker_compose_override(docker_config)
+            override_path = 'docker-compose.override.yml'
+
+            if os.path.exists(override_path):
+                shutil.copy(override_path, f"{override_path}.bak")
+                print(f"✓ Backed up existing {override_path} to {override_path}.bak")
+
+            with open(override_path, 'w', encoding='utf-8') as f:
+                f.write(override_content)
+            print(f"✓ Wrote Docker Compose override to {override_path}")
+
         # Phase 8: Display next steps
         wizard.display_next_steps(mode)
 

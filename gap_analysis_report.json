@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-10-22T16:56:21.799535",
+  "gaps": [
+    {
+      "id": "ENDPOINT__API_GENERATE",
+      "title": "Missing endpoint: /api/generate",
+      "severity": "MEDIUM",
+      "file": "C:\\FacelessYouTube\\src\\api\\main.py",
+      "effort": "MEDIUM",
+      "description": "Video generation trigger endpoint not implemented"
+    },
+    {
+      "id": "ENV_VARS_MISSING",
+      "title": "Missing environment variables: ['MONGODB_URL']",
+      "severity": "MEDIUM",
+      "file": ".env",
+      "effort": "LOW",
+      "description": "Database connection not fully configured"
+    },
+    {
+      "id": "MODULE_SRC_API_MAIN",
+      "title": "Module import failed: src.api.main",
+      "severity": "HIGH",
+      "file": "src/api/main.py",
+      "effort": "MEDIUM",
+      "description": "API application not properly configured"
+    },
+    {
+      "id": "MODULE_SRC_DATABASE_POSTGRES",
+      "title": "Module import failed: src.database.postgres",
+      "severity": "HIGH",
+      "file": "src/database/postgres.py",
+      "effort": "MEDIUM",
+      "description": "PostgreSQL integration not properly configured"
+    },
+    {
+      "id": "MODULE_SRC_MODELS",
+      "title": "Module import failed: src.models",
+      "severity": "HIGH",
+      "file": "src/models.py",
+      "effort": "MEDIUM",
+      "description": "Data models not properly configured"
+    },
+    {
+      "id": "MODULE_SRC_CONFIG",
+      "title": "Module import failed: src.config",
+      "severity": "HIGH",
+      "file": "src/config.py",
+      "effort": "MEDIUM",
+      "description": "Configuration not properly configured"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "POTENTIAL_SECRETS_IN_ENV",
+      "title": "Potential secrets in .env file",
+      "description": "Verify all secrets are properly masked"
+    }
+  ],
+  "info": [],
+  "summary": {
+    "total_gaps": 6,
+    "by_severity": {
+      "MEDIUM": 2,
+      "HIGH": 4
+    },
+    "critical_count": 0,
+    "high_count": 4,
+    "medium_count": 2,
+    "low_count": 0
+  }
+}

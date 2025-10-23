@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-10-22T17:48:24.479586",
+  "validations": {
+    "Python Version": {
+      "name": "Python Version",
+      "status": "PASS",
+      "details": "Python 3.13.7",
+      "required": ">= 3.13",
+      "severity": "INFO"
+    },
+    "Dependencies": {
+      "name": "Dependencies",
+      "status": "PASS",
+      "details": "8/8 available",
+      "severity": "INFO"
+    },
+    "Database": {
+      "name": "Database Configuration",
+      "status": "FAIL",
+      "details": "0/4 present (missing: alembic.ini, src/database/postgres.py, src/core/models.py, src/core/__init__.py)",
+      "severity": "CRITICAL"
+    },
+    "API": {
+      "name": "API Structure",
+      "status": "FAIL",
+      "details": "src/api/main.py not found",
+      "severity": "CRITICAL"
+    },
+    "Environment": {
+      "name": "Environment Config",
+      "status": "WARN",
+      "details": ".env file not found (use setup wizard to create)",
+      "severity": "MEDIUM"
+    },
+    "Frontend": {
+      "name": "Frontend Setup",
+      "status": "FAIL",
+      "details": "dashboard/ directory not found",
+      "severity": "HIGH"
+    },
+    "Docker": {
+      "name": "Docker Configuration",
+      "status": "WARN",
+      "details": "0/3 (missing: docker-compose.yml, docker-compose.staging.yml, Dockerfile.prod)",
+      "severity": "MEDIUM"
+    },
+    "Tests": {
+      "name": "Test Suite",
+      "status": "FAIL",
+      "details": "tests/ directory not found",
+      "severity": "MEDIUM"
+    },
+    "Documentation": {
+      "name": "Documentation",
+      "status": "WARN",
+      "details": "0/3 documentation files",
+      "severity": "LOW"
+    },
+    "Git": {
+      "name": "Git Status",
+      "status": "WARN",
+      "details": "2 uncommitted changes",
+      "severity": "LOW"
+    }
+  },
+  "blockers": [
+    "Database",
+    "API"
+  ],
+  "warnings": [
+    "Environment",
+    "Docker",
+    "Documentation",
+    "Git"
+  ],
+  "ready_for_production": false,
+  "summary": {
+    "passed": 2,
+    "failed": 4,
+    "warnings": 4,
+    "total": 10,
+    "blockers": 2,
+    "production_ready": false
+  }
+}

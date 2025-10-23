@@ -15,7 +15,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - REDIS_URL=${REDIS_URL}
     ports:
-      - "8000:8000"
+      - "8001:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -76,7 +76,7 @@ services:
       - staging-network
 
   mongodb-staging:
-    image: mongo:6-alpine
+    image: mongo:7
     container_name: mongodb-staging
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}

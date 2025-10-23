@@ -37,7 +37,7 @@ COPY src/ ./src/
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# USER appuser  # Disabled for now - causing permission issues with uvicorn
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

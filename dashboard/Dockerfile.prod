@@ -6,13 +6,13 @@ FROM node:18-alpine as builder
 WORKDIR /app
 
 # Copy package files
-COPY dashboard/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy source
-COPY dashboard/. .
+COPY . .
 
 # Build application
 RUN npm run build
@@ -28,8 +28,8 @@ RUN npm install -g serve
 # Copy built app from builder
 COPY --from=builder /app/dist ./dist
 
-# Create non-root user
-RUN addgroup -g 1000 appuser && adduser -u 1000 -G appuser appuser
+# Create non-root user (use default IDs to avoid conflicts in Alpine)
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 USER appuser
 
 # Health check

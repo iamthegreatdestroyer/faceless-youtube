@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-10-23T15:54:09.085135",
+  "workflows": {
+    "authentication": {
+      "status": "INFO",
+      "message": "No protected endpoints found (auth not enforced)"
+    },
+    "list_jobs": {
+      "status": "FAIL",
+      "error": "Status 404"
+    },
+    "create_job": {
+      "status": "FAIL",
+      "step": "create_job",
+      "error": "Status 404"
+    },
+    "generate_video": {
+      "status": "FAIL",
+      "error": "Endpoint not found"
+    },
+    "export_video": {
+      "status": "FAIL",
+      "error": "Endpoint not found"
+    }
+  },
+  "gaps": [
+    {
+      "workflow": "list_jobs",
+      "issue": "GET /api/jobs returns 404",
+      "severity": "HIGH",
+      "step": "GET /api/jobs"
+    },
+    {
+      "workflow": "create_job",
+      "issue": "Cannot create job via /api/jobs",
+      "severity": "CRITICAL",
+      "step": "POST /api/jobs"
+    },
+    {
+      "workflow": "generate_video",
+      "issue": "POST /api/jobs/generate not implemented",
+      "severity": "CRITICAL",
+      "step": "Generate video"
+    },
+    {
+      "workflow": "export_video",
+      "issue": "GET /api/videos/export not implemented",
+      "severity": "HIGH"
+    }
+  ],
+  "summary": {
+    "workflows_passed": 1,
+    "workflows_total": 5,
+    "gaps_found": 4
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "timestamp": "2025-10-23T16:14:36.081272",
+  "performance_tests": {
+    "/health": {
+      "endpoint": "/health",
+      "iterations": 100,
+      "successes": 100,
+      "errors": 0,
+      "min_ms": 10.43391227722168,
+      "max_ms": 36.908626556396484,
+      "mean_ms": 14.712765216827393,
+      "median_ms": 11.63339614868164,
+      "stdev_ms": 6.355184715064092,
+      "p95_ms": 30.426979064941406,
+      "p99_ms": 36.908626556396484
+    },
+    "/api/health": {
+      "endpoint": "/api/health",
+      "iterations": 100,
+      "successes": 100,
+      "errors": 0,
+      "min_ms": 9.999275207519531,
+      "max_ms": 35.576820373535156,
+      "mean_ms": 14.130005836486816,
+      "median_ms": 11.711597442626953,
+      "stdev_ms": 6.45842193418869,
+      "p95_ms": 32.36699104309082,
+      "p99_ms": 35.576820373535156
+    },
+    "/api/jobs": {
+      "endpoint": "/api/jobs",
+      "iterations": 100,
+      "successes": 100,
+      "errors": 0,
+      "min_ms": 10.524749755859375,
+      "max_ms": 407.5155258178711,
+      "mean_ms": 19.08910036087036,
+      "median_ms": 12.468457221984863,
+      "stdev_ms": 39.78451430597183,
+      "p95_ms": 32.8671932220459,
+      "p99_ms": 407.5155258178711
+    },
+    "/metrics": {
+      "endpoint": "/metrics",
+      "iterations": 100,
+      "successes": 100,
+      "errors": 0,
+      "min_ms": 13.741493225097656,
+      "max_ms": 39.750099182128906,
+      "mean_ms": 19.899754524230957,
+      "median_ms": 16.61550998687744,
+      "stdev_ms": 6.889141658442747,
+      "p95_ms": 36.25893592834473,
+      "p99_ms": 39.750099182128906
+    }
+  },
+  "load_tests": {
+    "10_users_10s": {
+      "num_users": 10,
+      "duration_sec": 10,
+      "total_requests": 1318,
+      "total_errors": 0,
+      "requests_per_second": 131.01563432556816,
+      "avg_response_time_ms": 76.13046777085577,
+      "success_rate": 100.0
+    },
+    "25_users_10s": {
+      "num_users": 25,
+      "duration_sec": 10,
+      "total_requests": 1401,
+      "total_errors": 0,
+      "requests_per_second": 137.2421411962321,
+      "avg_response_time_ms": 180.39064182714426,
+      "success_rate": 100.0
+    },
+    "50_users_10s": {
+      "num_users": 50,
+      "duration_sec": 10,
+      "total_requests": 1251,
+      "total_errors": 0,
+      "requests_per_second": 119.08604815379408,
+      "avg_response_time_ms": 410.06000474583715,
+      "success_rate": 100.0
+    }
+  }
+}

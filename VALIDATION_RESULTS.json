@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-10-23T16:14:10.961690",
+  "tests_run": 9,
+  "tests_passed": 8,
+  "tests_failed": 1,
+  "results": [
+    {
+      "test": "GET /health",
+      "passed": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "GET /api/health",
+      "passed": true,
+      "details": "Status: 200, Schedulers: {'content_scheduler': True, 'recurring_scheduler': True, 'calendar_manager': True}"
+    },
+    {
+      "test": "GET /ready",
+      "passed": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "POST /api/auth/login",
+      "passed": true,
+      "details": "Status: 422 (auth validation working)"
+    },
+    {
+      "test": "GET /api/jobs (list)",
+      "passed": true,
+      "details": "Status: 200, Count: 0"
+    },
+    {
+      "test": "POST /api/jobs (create)",
+      "passed": true,
+      "details": "Status: 201, ID: 87011e9e-0bdb-4e0e-bc08-c435540b9eab"
+    },
+    {
+      "test": "POST /api/videos (create)",
+      "passed": false,
+      "details": "Status: 401"
+    },
+    {
+      "test": "GET /metrics",
+      "passed": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Database query (via /api/jobs)",
+      "passed": true,
+      "details": "Status: 200"
+    }
+  ],
+  "performance_baseline": {
+    "/health": 11.983871459960938,
+    "/api/health": 13.121366500854492,
+    "/api/jobs": 13.234138488769531,
+    "/metrics": 18.107891082763672
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-10-23T16:47:25.214362",
+  "analysis": {
+    "response_distribution": {
+      "requests": 1000,
+      "errors": 0,
+      "p50_ms": 7.41,
+      "p95_ms": 10.3,
+      "p99_ms": 18.31,
+      "min_ms": 6.22,
+      "max_ms": 44.98
+    },
+    "endpoints": {
+      "/health": {
+        "avg_ms": 7.36
+      },
+      "/api/health": {
+        "avg_ms": 9.26
+      },
+      "/api/jobs": {
+        "avg_ms": 9.29
+      },
+      "/metrics": {
+        "avg_ms": 12.32
+      }
+    },
+    "concurrency": {
+      "total_requests": 1000,
+      "duration_seconds": 5.56,
+      "rps": 179.93,
+      "avg_response_ms": 268.49,
+      "error_rate_percent": 0.0
+    },
+    "database": {
+      "avg_query_ms": 7.92,
+      "queries_tested": 50
+    },
+    "sustained_load": {
+      "duration_seconds": 30.1,
+      "requests": 6220,
+      "errors": 0,
+      "rps": 206.95,
+      "success_rate_percent": 100.0
+    }
+  }
+}

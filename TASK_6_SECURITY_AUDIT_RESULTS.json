@@ -1,0 +1,166 @@
+{
+  "timestamp": "2025-10-23T16:45:46.609754",
+  "security_audit": [
+    {
+      "name": "Authentication & Authorization",
+      "checks": []
+    },
+    {
+      "name": "Input Validation & Sanitization",
+      "checks": []
+    },
+    {
+      "name": "Data Protection",
+      "checks": [
+        {
+          "name": "Environment Configuration",
+          "status": "\u2713 Environment-based",
+          "details": "3 config files found"
+        }
+      ]
+    },
+    {
+      "name": "Error Handling & Logging",
+      "checks": [
+        {
+          "name": "Exception Handling",
+          "status": "\u2713 Good",
+          "details": "Specific exception types recommended"
+        },
+        {
+          "name": "Debug Mode",
+          "status": "\u2713 Disabled",
+          "details": "Should be False in production"
+        }
+      ]
+    }
+  ],
+  "security_patterns": 503,
+  "performance_patterns": 73,
+  "details": {
+    "security": [
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 599,
+        "pattern": "sql_injection_risk",
+        "content": "file_path=f\"/tmp/video_{datetime.utcnow().timestamp()}.mp4\",  # Temporary"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 609,
+        "pattern": "sql_injection_risk",
+        "content": "logger.info(f\"Created video: {video.id} - {video.title}\")"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 614,
+        "pattern": "sql_injection_risk",
+        "content": "logger.error(f\"Failed to create video: {e}\", exc_info=True)"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 618,
+        "pattern": "sql_injection_risk",
+        "content": "detail=f\"Failed to create video: {str(e)}\""
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 658,
+        "pattern": "sql_injection_risk",
+        "content": "logger.error(f\"Failed to list videos: {e}\", exc_info=True)"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 661,
+        "pattern": "sql_injection_risk",
+        "content": "detail=f\"Failed to list videos: {str(e)}\""
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 696,
+        "pattern": "sql_injection_risk",
+        "content": "detail=f\"Video {video_id} not found\""
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 724,
+        "pattern": "sql_injection_risk",
+        "content": "logger.error(f\"Failed to get video {video_id}: {e}\", exc_info=True)"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 727,
+        "pattern": "sql_injection_risk",
+        "content": "detail=f\"Failed to get video: {str(e)}\""
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 764,
+        "pattern": "sql_injection_risk",
+        "content": "detail=f\"Video {video_id} not found\""
+      }
+    ],
+    "performance": [
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\auth.py",
+        "line": 275,
+        "pattern": "missing_index_hint",
+        "content": ".filter((User.username == username) | (User.email == username))"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\auth.py",
+        "line": 286,
+        "pattern": "missing_index_hint",
+        "content": ".filter((User.username == username) | (User.email == username))"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 112,
+        "pattern": "blocking_io",
+        "content": "# when the server begins handling requests. Skip instrumentation in"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 653,
+        "pattern": "large_query",
+        "content": "videos = db.query(Video).filter(Video.user_id == user_id).offset(skip).limit(lim"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 653,
+        "pattern": "missing_index_hint",
+        "content": "videos = db.query(Video).filter(Video.user_id == user_id).offset(skip).limit(lim"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 691,
+        "pattern": "missing_index_hint",
+        "content": "video = db.query(Video).filter(Video.id == video_id).first()"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 704,
+        "pattern": "missing_index_hint",
+        "content": ".filter((User.username == current_user) | (User.email == current_user))"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 759,
+        "pattern": "missing_index_hint",
+        "content": "video = db.query(Video).filter(Video.id == video_id).first()"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 768,
+        "pattern": "missing_index_hint",
+        "content": "user = db.query(User).filter(User.username == current_user).first()"
+      },
+      {
+        "file": "c:\\FacelessYouTube\\src\\api\\main.py",
+        "line": 838,
+        "pattern": "missing_index_hint",
+        "content": "video = db.query(Video).filter(Video.id == video_id).first()"
+      }
+    ]
+  }
+}

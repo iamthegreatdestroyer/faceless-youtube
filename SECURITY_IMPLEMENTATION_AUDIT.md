@@ -21,7 +21,7 @@ REMAINING ⏳ (3 items):
 - Database Hardening (Item 3)
 - Secrets Management (Item 4)
 
-Revised Timeline: 
+Revised Timeline:
 - Previous estimate: 8-12 hours
 - New estimate: 4-6 hours (50% reduction due to pre-implementation)
 ```
@@ -38,18 +38,19 @@ Revised Timeline:
 
 **Headers Implemented (8 total):**
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| Strict-Transport-Security | max-age=31536000; includeSubDomains; preload | HSTS enforcement |
-| X-Frame-Options | DENY | Clickjacking prevention |
-| X-Content-Type-Options | nosniff | MIME sniffing prevention |
-| X-XSS-Protection | 1; mode=block | XSS attack prevention |
-| Content-Security-Policy | default-src 'self'; script-src 'self' 'unsafe-inline'; ... | Injection attack prevention |
-| Referrer-Policy | strict-origin-when-cross-origin | Referrer leak prevention |
-| Permissions-Policy | geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=() | Feature access control |
-| Server | "Unknown" | Information leakage prevention |
+| Header                    | Value                                                                         | Purpose                        |
+| ------------------------- | ----------------------------------------------------------------------------- | ------------------------------ |
+| Strict-Transport-Security | max-age=31536000; includeSubDomains; preload                                  | HSTS enforcement               |
+| X-Frame-Options           | DENY                                                                          | Clickjacking prevention        |
+| X-Content-Type-Options    | nosniff                                                                       | MIME sniffing prevention       |
+| X-XSS-Protection          | 1; mode=block                                                                 | XSS attack prevention          |
+| Content-Security-Policy   | default-src 'self'; script-src 'self' 'unsafe-inline'; ...                    | Injection attack prevention    |
+| Referrer-Policy           | strict-origin-when-cross-origin                                               | Referrer leak prevention       |
+| Permissions-Policy        | geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=() | Feature access control         |
+| Server                    | "Unknown"                                                                     | Information leakage prevention |
 
 **Integration Status:**
+
 - ✅ Imported in `src/api/main.py` (line 29)
 - ✅ Active middleware in FastAPI app (line 162)
 - ✅ Applied to ALL responses
@@ -78,15 +79,16 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 **Rate Limiting Strategy (Tiered by Sensitivity):**
 
-| Endpoint Type | Limit | Purpose |
-|---------------|-------|---------|
-| Authentication (Login, Token Refresh) | 5/minute | Brute force prevention |
-| Sensitive Operations (Transcription) | 10/minute | Resource protection |
-| Standard Operations (Video Analysis) | 30/minute | Fair usage |
-| General Data (List, Status) | 60/minute | Normal operations |
-| Public Health Endpoints | No limit | System monitoring |
+| Endpoint Type                         | Limit     | Purpose                |
+| ------------------------------------- | --------- | ---------------------- |
+| Authentication (Login, Token Refresh) | 5/minute  | Brute force prevention |
+| Sensitive Operations (Transcription)  | 10/minute | Resource protection    |
+| Standard Operations (Video Analysis)  | 30/minute | Fair usage             |
+| General Data (List, Status)           | 60/minute | Normal operations      |
+| Public Health Endpoints               | No limit  | System monitoring      |
 
 **Implementation Details:**
+
 - ✅ Slowapi Limiter imported (line 24)
 - ✅ Limiter initialized with `get_remote_address` key function (line 168)
 - ✅ Exception handler configured (line 170)
@@ -129,12 +131,14 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Status:** NOT YET IMPLEMENTED
 
 **Current State:**
+
 - Docker-compose uses HTTP only (port 8001:8000)
 - No SSL/TLS certificates configured
 - No HTTPS redirect middleware
 - HSTS headers ARE present (from Item 1) but HTTPS not yet enforced
 
 **Implementation Plan:**
+
 1. Add SSL/TLS certificate setup in docker-compose.staging.yml
 2. Add HTTPS port (443) mapping
 3. Create nginx reverse proxy for SSL termination
@@ -144,6 +148,7 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Estimated Effort:** 2-3 hours
 
 **Files to Modify:**
+
 - `docker-compose.staging.yml` - Add SSL configuration
 - `docker-compose.yml` - Optional, for completeness
 - `src/api/main.py` - Optional, add HTTPS redirect middleware
@@ -155,12 +160,14 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Status:** NOT YET IMPLEMENTED
 
 **Current State:**
+
 - PostgreSQL running in container
 - No encryption extensions enabled
 - No audit logging configured
 - Default security settings
 
 **Implementation Plan:**
+
 1. Create migration: Enable `pgcrypto` extension
 2. Create migration: Enable `pgaudit` extension
 3. Configure audit logging for all operations
@@ -170,6 +177,7 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Estimated Effort:** 3-4 hours
 
 **Files to Modify:**
+
 - `alembic/versions/[date]_enable_pgcrypto.py` - New migration
 - `alembic/versions/[date]_enable_pgaudit.py` - New migration
 - `docker-compose.staging.yml` - PostgreSQL configuration
@@ -181,11 +189,13 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Status:** PARTIALLY IMPLEMENTED (env vars exist, needs externalization)
 
 **Current State:**
+
 - Secrets stored in `.env` file (development pattern)
 - Environment variables injected via docker-compose
 - Appropriate for development, needs production setup
 
 **Implementation Plan:**
+
 1. Identify all secrets in codebase
 2. Create `src/core/secrets.py` for centralized access
 3. Prepare Vault integration documentation
@@ -195,6 +205,7 @@ async def login(credentials: LoginCredentials) -> TokenResponse:
 **Estimated Effort:** 4-6 hours (includes refactoring)
 
 **Files to Modify:**
+
 - `src/core/config.py` - Add secret loading logic
 - `src/core/secrets.py` - New file for secret management
 - `.env.example` - Remove sensitive values
@@ -235,18 +246,19 @@ After Phase 1 Completion: 95/100 (Production-Ready)
 ### Phase 1: Critical Hardening (Oct 24, 4-6 hours)
 
 **Already Complete (0 hours):**
+
 - ✅ Item 1: API Security Headers (VERIFIED)
 - ✅ Item 5: Rate Limiting (VERIFIED)
 
 **Remaining (4-6 hours):**
 
-| Task | Est. Time | Status |
-|------|-----------|--------|
-| Item 2: TLS/HTTPS Setup | 2-3 hrs | ⏳ NEXT |
-| Item 3: Database Hardening | 3-4 hrs | ⏳ NEXT |
-| Item 4: Secrets Management | 4-6 hrs | ⏳ NEXT |
-| Testing & Validation | 2 hrs | ⏳ AFTER ALL |
-| Documentation | 1 hr | ⏳ CONCURRENT |
+| Task                       | Est. Time | Status        |
+| -------------------------- | --------- | ------------- |
+| Item 2: TLS/HTTPS Setup    | 2-3 hrs   | ⏳ NEXT       |
+| Item 3: Database Hardening | 3-4 hrs   | ⏳ NEXT       |
+| Item 4: Secrets Management | 4-6 hrs   | ⏳ NEXT       |
+| Testing & Validation       | 2 hrs     | ⏳ AFTER ALL  |
+| Documentation              | 1 hr      | ⏳ CONCURRENT |
 
 **Timeline Reduction:** 50% faster due to pre-implementation
 
@@ -291,18 +303,21 @@ After Phase 1 Completion: 95/100 (Production-Ready)
 ## Quality Gates
 
 ### Before Moving to Item 3
+
 - [ ] Item 2 TLS configuration complete
 - [ ] HTTPS-only access verified
 - [ ] Performance maintained
 - [ ] All tests passing
 
 ### Before Moving to Item 4
+
 - [ ] Item 3 migrations successful
 - [ ] pgcrypto and pgaudit extensions active
 - [ ] Audit logging verified
 - [ ] No breaking changes
 
 ### Before Phase 1 Sign-off
+
 - [ ] All 4 critical items complete
 - [ ] All tests passing
 - [ ] Performance P95 < 100ms
@@ -315,16 +330,16 @@ After Phase 1 Completion: 95/100 (Production-Ready)
 
 **Phase 1 Completion Criteria:**
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| Security Headers | 8/8 | 8/8 | ✅ |
-| Rate Limiting | Active on all | 9 endpoints | ✅ |
-| TLS/HTTPS | Enforced | HTTP only | ⏳ |
-| Database Encryption | pgcrypto | Not enabled | ⏳ |
-| Audit Logging | pgaudit active | Not enabled | ⏳ |
-| Secrets Externalized | Vault-ready | Env vars | ⏳ |
-| Test Coverage | >90% | Maintained | ✅ |
-| Performance P95 | <100ms | 10.3ms | ✅ |
+| Metric               | Target         | Current     | Status |
+| -------------------- | -------------- | ----------- | ------ |
+| Security Headers     | 8/8            | 8/8         | ✅     |
+| Rate Limiting        | Active on all  | 9 endpoints | ✅     |
+| TLS/HTTPS            | Enforced       | HTTP only   | ⏳     |
+| Database Encryption  | pgcrypto       | Not enabled | ⏳     |
+| Audit Logging        | pgaudit active | Not enabled | ⏳     |
+| Secrets Externalized | Vault-ready    | Env vars    | ⏳     |
+| Test Coverage        | >90%           | Maintained  | ✅     |
+| Performance P95      | <100ms         | 10.3ms      | ✅     |
 
 ---
 

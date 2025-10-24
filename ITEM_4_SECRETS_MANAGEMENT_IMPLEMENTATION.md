@@ -12,11 +12,13 @@
 This guide implements centralized secrets management and prepares the application for production-grade secret handling via HashiCorp Vault (deployment in Phase 2).
 
 **Current State:**
+
 - Secrets in `.env` files (development pattern)
 - Environment variables injected via docker-compose
 - Works for development, not production-ready
 
 **Target State:**
+
 - Centralized secret management
 - Secrets abstracted from application code
 - Vault-ready architecture
@@ -70,6 +72,7 @@ This guide implements centralized secrets management and prepares the applicatio
 **Create:** `src/core/secrets.py`
 
 **Benefits:**
+
 - Secrets accessed through single interface
 - Easy to swap backends (env vars → Vault)
 - Centralized secret validation
@@ -80,6 +83,7 @@ This guide implements centralized secrets management and prepares the applicatio
 **Purpose:** Update `src/core/config.py` to use SecretManager
 
 **Impact:**
+
 - No changes to application logic
 - Secrets transparently loaded from right source
 - Backward compatible with env vars
@@ -87,6 +91,7 @@ This guide implements centralized secrets management and prepares the applicatio
 ### Phase 3: Update Environment Templates
 
 **Files:**
+
 - `.env.example` - Template without sensitive values
 - `.env.production.example` - Production template
 
@@ -95,6 +100,7 @@ This guide implements centralized secrets management and prepares the applicatio
 **Purpose:** Enable Phase 2 deployment
 
 **Content:**
+
 - Vault setup instructions
 - Integration code examples
 - Credential rotation procedures
@@ -102,6 +108,7 @@ This guide implements centralized secrets management and prepares the applicatio
 ### Phase 5: Testing & Validation
 
 **Verification:**
+
 - Application starts without errors
 - All secrets properly loaded
 - No breaking changes
@@ -154,16 +161,16 @@ class SecretSource(Enum):
 class SecretManager:
     """
     Centralized secret manager with support for multiple backends.
-    
+
     Usage:
         secrets = SecretManager()
         api_key = secrets.get_secret("youtube_api_key")
-        
+
     Vault Integration (Phase 2):
         secrets = SecretManager(source="vault", vault_addr="https://vault.example.com")
         api_key = secrets.get_secret("youtube_api_key")
     """
-    
+
     # Secret definitions with metadata
     SECRETS_MANIFEST = {
         # Database Credentials
@@ -185,7 +192,7 @@ class SecretManager:
             "patterns": ["POSTGRES_PASSWORD"],
             "sensitive": True,
         },
-        
+
         # API Keys
         "youtube_api_key": {
             "required": False,
@@ -199,7 +206,7 @@ class SecretManager:
             "patterns": ["ANTHROPIC_API_KEY"],
             "sensitive": True,
         },
-        
+
         # OAuth Credentials
         "google_client_id": {
             "required": False,
@@ -213,7 +220,7 @@ class SecretManager:
             "patterns": ["GOOGLE_CLIENT_SECRET"],
             "sensitive": True,
         },
-        
+
         # Application Secrets
         "secret_key": {
             "required": True,
@@ -227,7 +234,7 @@ class SecretManager:
             "patterns": ["ENCRYPTION_KEY"],
             "sensitive": True,
         },
-        
+
         # Redis
         "redis_password": {
             "required": False,
@@ -235,7 +242,7 @@ class SecretManager:
             "patterns": ["REDIS_PASSWORD"],
             "sensitive": True,
         },
-        
+
         # MongoDB
         "mongodb_uri": {
             "required": False,
@@ -243,7 +250,7 @@ class SecretManager:
             "patterns": ["MONGODB_URI"],
             "sensitive": True,
         },
-        
+
         # Configuration (non-sensitive)
         "environment": {
             "required": True,
@@ -264,11 +271,11 @@ class SecretManager:
             "sensitive": False,
         },
     }
-    
+
     def __init__(self, source: str = "environment", **kwargs):
         """
         Initialize SecretManager.
-        
+
         Args:
             source: Secret source ("environment" or "vault")
             **kwargs: Backend-specific configuration
@@ -276,16 +283,16 @@ class SecretManager:
         self.source = SecretSource(source)
         self.vault_config = kwargs if source == "vault" else {}
         self._secret_cache: Dict[str, Any] = {}
-        
+
         if source == "vault":
             self._init_vault_client(**kwargs)
-        
+
         logger.info(f"SecretManager initialized with source: {source}")
-    
+
     def _init_vault_client(self, **config):
         """
         Initialize Vault client.
-        
+
         Configuration:
             vault_addr: Vault server address (default: http://localhost:8200)
             vault_token: Authentication token (from environment)
@@ -293,56 +300,56 @@ class SecretManager:
         """
         try:
             import hvac
-            
+
             vault_addr = config.get("vault_addr", os.getenv("VAULT_ADDR", "http://localhost:8200"))
             vault_token = os.getenv("VAULT_TOKEN")
-            
+
             if not vault_token:
                 raise ValueError("VAULT_TOKEN environment variable not set")
-            
+
             self.vault_client = hvac.Client(
                 url=vault_addr,
                 token=vault_token,
                 namespace=config.get("vault_namespace"),
             )
-            
+
             # Verify Vault connection
             if not self.vault_client.is_authenticated():
                 raise ValueError("Failed to authenticate with Vault")
-            
+
             logger.info(f"Vault client initialized: {vault_addr}")
-            
+
         except ImportError:
             logger.warning("hvac library not installed. Vault support disabled.")
             self.vault_client = None
-    
+
     @lru_cache(maxsize=128)
     def get_secret(self, key: str, default: Optional[str] = None) -> Optional[str]:
         """
         Retrieve a secret from configured source.
-        
+
         Args:
             key: Secret key (lowercase with underscores)
             default: Default value if secret not found
-            
+
         Returns:
             Secret value or default
-            
+
         Raises:
             SecretNotFoundError: If required secret not found
         """
         # Check cache first
         if key in self._secret_cache:
             return self._secret_cache[key]
-        
+
         # Get from source based on configuration
         secret = None
-        
+
         if self.source == SecretSource.VAULT:
             secret = self._get_from_vault(key)
         elif self.source == SecretSource.ENVIRONMENT:
             secret = self._get_from_environment(key)
-        
+
         # Handle not found
         if secret is None:
             manifest = self.SECRETS_MANIFEST.get(key, {})
@@ -352,18 +359,18 @@ class SecretManager:
                     f"Description: {manifest.get('description')}"
                 )
             secret = default
-        
+
         # Cache the result
         if secret is not None:
             self._secret_cache[key] = secret
-        
+
         return secret
-    
+
     def _get_from_environment(self, key: str) -> Optional[str]:
         """Get secret from environment variables."""
         manifest = self.SECRETS_MANIFEST.get(key, {})
         patterns = manifest.get("patterns", [key.upper()])
-        
+
         for pattern in patterns:
             value = os.getenv(pattern)
             if value:
@@ -372,38 +379,38 @@ class SecretManager:
                 else:
                     logger.debug(f"Configuration loaded from environment: {pattern}")
                 return value
-        
+
         return None
-    
+
     def _get_from_vault(self, key: str) -> Optional[str]:
         """Get secret from HashiCorp Vault."""
         if not self.vault_client:
             logger.warning("Vault client not initialized, falling back to environment")
             return self._get_from_environment(key)
-        
+
         try:
             # Vault path: secret/data/{environment}/{key}
             environment = os.getenv("ENVIRONMENT", "development")
             path = f"secret/data/{environment}/{key}"
-            
+
             response = self.vault_client.secrets.kv.v2.read_secret_version(path)
             secret = response["data"]["data"].get("value")
-            
+
             if secret:
                 logger.debug(f"Secret loaded from Vault: {path}")
                 return secret
-            
+
         except Exception as e:
             logger.warning(f"Failed to read secret from Vault: {e}")
             # Fall back to environment variables
             return self._get_from_environment(key)
-        
+
         return None
-    
+
     def list_secrets(self) -> Dict[str, Any]:
         """
         List all configured secrets (for debugging).
-        
+
         Returns:
             Dictionary of secret metadata (without values)
         """
@@ -416,16 +423,16 @@ class SecretManager:
             }
             for key, manifest in self.SECRETS_MANIFEST.items()
         }
-    
+
     def validate_secrets(self) -> Dict[str, bool]:
         """
         Validate that all required secrets are available.
-        
+
         Returns:
             Dictionary of secret names and validation status
         """
         validation_results = {}
-        
+
         for key, manifest in self.SECRETS_MANIFEST.items():
             if manifest.get("required"):
                 try:
@@ -434,9 +441,9 @@ class SecretManager:
                 except SecretNotFoundError:
                     validation_results[key] = False
                     logger.error(f"Required secret missing: {key}")
-        
+
         return validation_results
-    
+
     def clear_cache(self):
         """Clear secret cache (use after rotation)."""
         self._secret_cache.clear()
@@ -450,11 +457,11 @@ _secret_manager: Optional[SecretManager] = None
 def get_secret_manager() -> SecretManager:
     """Get or create the global SecretManager instance."""
     global _secret_manager
-    
+
     if _secret_manager is None:
         source = os.getenv("SECRET_SOURCE", "environment")
         _secret_manager = SecretManager(source=source)
-    
+
     return _secret_manager
 
 
@@ -462,7 +469,7 @@ def get_secret_manager() -> SecretManager:
 def get_secret(key: str, default: Optional[str] = None) -> Optional[str]:
     """
     Convenience function to get a secret.
-    
+
     Usage:
         from src.core.secrets import get_secret
         api_key = get_secret("youtube_api_key")
@@ -496,99 +503,99 @@ logger = None  # Will be set in __init__
 class Settings:
     """
     Application settings loaded from environment and secrets.
-    
+
     Priority:
     1. Environment variables (override)
     2. Secrets manager (Vault or env vars)
     3. Default values
     """
-    
+
     def __init__(self):
         """Initialize settings with secrets."""
         self.secrets = get_secret_manager()
-        
+
         # Database
         self.database_url: str = self.secrets.get_secret(
             "database_url",
             default=os.getenv("DATABASE_URL", "postgresql://user:password@localhost/db")
         )
-        
+
         # API Keys
         self.youtube_api_key: Optional[str] = self.secrets.get_secret(
             "youtube_api_key",
             default=None
         )
-        
+
         self.anthropic_api_key: Optional[str] = self.secrets.get_secret(
             "anthropic_api_key",
             default=os.getenv("ANTHROPIC_API_KEY")
         )
-        
+
         # OAuth
         self.google_client_id: Optional[str] = self.secrets.get_secret(
             "google_client_id",
             default=None
         )
-        
+
         self.google_client_secret: Optional[str] = self.secrets.get_secret(
             "google_client_secret",
             default=None
         )
-        
+
         # Application Secrets
         self.secret_key: str = self.secrets.get_secret(
             "secret_key",
             default=os.getenv("SECRET_KEY", "change-me-in-production")
         )
-        
+
         self.encryption_key: Optional[str] = self.secrets.get_secret(
             "encryption_key",
             default=None
         )
-        
+
         # Redis
         self.redis_password: Optional[str] = self.secrets.get_secret(
             "redis_password",
             default=None
         )
-        
+
         # MongoDB
         self.mongodb_uri: Optional[str] = self.secrets.get_secret(
             "mongodb_uri",
             default=None
         )
-        
+
         # Environment
         self.environment: str = self.secrets.get_secret(
             "environment",
             default=os.getenv("ENVIRONMENT", "development")
         )
-        
+
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")
-    
+
     def validate(self) -> bool:
         """
         Validate all required settings are available.
-        
+
         Returns:
             True if all required settings are available
-            
+
         Raises:
             ValueError: If required settings are missing
         """
         required_keys = ["database_url", "secret_key", "environment"]
-        
+
         validation_results = self.secrets.validate_secrets()
-        
+
         missing = [key for key, valid in validation_results.items() if not valid]
-        
+
         if missing:
             raise ValueError(
                 f"Missing required secrets: {', '.join(missing)}. "
                 f"Ensure these are set in environment or Vault."
             )
-        
+
         return True
 
 
@@ -596,7 +603,7 @@ class Settings:
 def get_settings() -> Settings:
     """
     Get cached settings instance.
-    
+
     Usage:
         from src.core.config import get_settings
         settings = get_settings()
@@ -743,19 +750,19 @@ async def startup_secrets():
     try:
         secrets = get_secret_manager()
         settings = get_settings()
-        
+
         # Validate required secrets
         validation = secrets.validate_secrets()
         failed_secrets = [k for k, v in validation.items() if not v]
-        
+
         if failed_secrets:
             logger.error(f"Missing required secrets: {failed_secrets}")
             raise ValueError(f"Cannot start without required secrets: {failed_secrets}")
-        
+
         logger.info(f"✓ All required secrets validated ({len(validation)} total)")
         logger.info(f"✓ Environment: {settings.environment}")
         logger.info(f"✓ Debug mode: {settings.debug}")
-        
+
     except Exception as e:
         logger.error(f"✗ Secrets validation failed: {e}")
         raise
@@ -784,17 +791,17 @@ from src.core.secrets import (
 
 class TestSecretManager:
     """Test SecretManager functionality."""
-    
+
     def test_secret_manager_creation(self):
         """Test that SecretManager initializes correctly."""
         manager = SecretManager(source="environment")
         assert manager is not None
         assert manager.source.value == "environment"
-    
+
     def test_get_secret_from_environment(self, monkeypatch):
         """Test getting secret from environment variables."""
         monkeypatch.setenv("TEST_SECRET", "test_value")
-        
+
         manager = SecretManager(source="environment")
         # Register test secret
         manager.SECRETS_MANIFEST["test_secret"] = {
@@ -802,64 +809,64 @@ class TestSecretManager:
             "patterns": ["TEST_SECRET"],
             "sensitive": True,
         }
-        
+
         secret = manager.get_secret("test_secret")
         assert secret == "test_value"
-    
+
     def test_required_secret_not_found(self):
         """Test that SecretNotFoundError raised for missing required secret."""
         manager = SecretManager(source="environment")
-        
+
         with pytest.raises(SecretNotFoundError):
             manager.get_secret("nonexistent_required_secret")
-    
+
     def test_secret_caching(self, monkeypatch):
         """Test that secrets are cached."""
         monkeypatch.setenv("CACHED_SECRET", "cached_value")
-        
+
         manager = SecretManager(source="environment")
         manager.SECRETS_MANIFEST["cached_secret"] = {
             "required": False,
             "patterns": ["CACHED_SECRET"],
             "sensitive": True,
         }
-        
+
         # First access
         secret1 = manager.get_secret("cached_secret")
-        
+
         # Change environment value
         monkeypatch.setenv("CACHED_SECRET", "new_value")
-        
+
         # Second access should return cached value
         secret2 = manager.get_secret("cached_secret")
-        
+
         assert secret1 == secret2 == "cached_value"
-    
+
     def test_cache_clear(self, monkeypatch):
         """Test clearing secret cache."""
         monkeypatch.setenv("CLEAR_TEST_SECRET", "initial_value")
-        
+
         manager = SecretManager(source="environment")
         manager.SECRETS_MANIFEST["clear_test_secret"] = {
             "required": False,
             "patterns": ["CLEAR_TEST_SECRET"],
             "sensitive": True,
         }
-        
+
         secret1 = manager.get_secret("clear_test_secret")
         manager.clear_cache()
-        
+
         monkeypatch.setenv("CLEAR_TEST_SECRET", "updated_value")
         secret2 = manager.get_secret("clear_test_secret")
-        
+
         assert secret1 == "initial_value"
         assert secret2 == "updated_value"
-    
+
     def test_list_secrets(self):
         """Test listing available secrets."""
         manager = SecretManager(source="environment")
         secrets_list = manager.list_secrets()
-        
+
         assert isinstance(secrets_list, dict)
         assert len(secrets_list) > 0
         assert "database_url" in secrets_list
@@ -950,12 +957,14 @@ grep -E "api.key|password|token|secret" .env.example || echo "✓ No secrets in 
 ### For Existing Code
 
 **Before (directly accessing os.environ):**
+
 ```python
 api_key = os.getenv("YOUTUBE_API_KEY")
 db_url = os.getenv("DATABASE_URL")
 ```
 
 **After (using SecretManager):**
+
 ```python
 from src.core.secrets import get_secret
 
@@ -964,6 +973,7 @@ db_url = get_secret("database_url")
 ```
 
 **Or using Config:**
+
 ```python
 from src.core.config import get_settings
 

@@ -129,7 +129,7 @@ depends_on = None
 def upgrade():
     """
     Enable pgcrypto extension for column-level encryption.
-    
+
     This migration:
     1. Creates the pgcrypto extension
     2. Adds encrypted data type support
@@ -137,7 +137,7 @@ def upgrade():
     """
     # Create pgcrypto extension if not exists
     op.execute('CREATE EXTENSION IF NOT EXISTS pgcrypto')
-    
+
     # Verify extension is installed
     op.execute("""
         DO $$
@@ -149,7 +149,7 @@ def upgrade():
             END IF;
         END $$;
     """)
-    
+
     # Create encrypted data table (for sensitive values)
     op.create_table(
         'encrypted_data',
@@ -159,26 +159,26 @@ def upgrade():
         sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
     )
-    
+
     # Create index on key for faster lookups
     op.create_index('idx_encrypted_data_key', 'encrypted_data', ['key'])
-    
+
     print("✓ pgcrypto extension enabled successfully")
 
 
 def downgrade():
     """
     Rollback pgcrypto extension and encrypted data table.
-    
+
     WARNING: This will drop the encrypted_data table and lose any stored encrypted values.
     """
     # Drop encrypted data table
     op.drop_index('idx_encrypted_data_key')
     op.drop_table('encrypted_data')
-    
+
     # Drop pgcrypto extension
     op.execute('DROP EXTENSION IF EXISTS pgcrypto')
-    
+
     print("✓ pgcrypto extension disabled and reverted")
 ```
 
@@ -209,7 +209,7 @@ depends_on = None
 def upgrade():
     """
     Enable pgaudit extension for comprehensive audit logging.
-    
+
     This migration:
     1. Creates the pgaudit extension
     2. Creates audit logging tables
@@ -218,7 +218,7 @@ def upgrade():
     """
     # Create pgaudit extension if not exists
     op.execute('CREATE EXTENSION IF NOT EXISTS pgaudit')
-    
+
     # Verify extension is installed
     op.execute("""
         DO $$
@@ -230,7 +230,7 @@ def upgrade():
             END IF;
         END $$;
     """)
-    
+
     # Create audit log table (if not using pgaudit's default)
     op.create_table(
         'audit_log',
@@ -249,53 +249,53 @@ def upgrade():
         sa.Column('transaction_id', sa.BigInteger()),
         sa.Column('affected_rows', sa.Integer()),
     )
-    
+
     # Create indexes for common audit queries
     op.create_index('idx_audit_log_timestamp', 'audit_log', ['timestamp'])
     op.create_index('idx_audit_log_user', 'audit_log', ['user_name'])
     op.create_index('idx_audit_log_action', 'audit_log', ['action'])
     op.create_index('idx_audit_log_object', 'audit_log', ['object_type', 'object_name'])
-    
+
     # Set pgaudit configuration - log all connections
     op.execute("""
         ALTER SYSTEM SET shared_preload_libraries = 'pgaudit';
         SELECT pg_reload_conf();
     """)
-    
+
     # Configure pgaudit to log modifications (INSERT, UPDATE, DELETE)
     op.execute("""
         DO $$
         BEGIN
             -- Set pgaudit parameters for audit logging
             -- This requires server restart to take effect (done in docker-compose)
-            
+
             -- Log statement level: DML modifications
             EXECUTE 'SET pgaudit.log = ''ALL''';
-            
+
             -- Log connections
             EXECUTE 'SET pgaudit.log_connections = on';
-            
+
             -- Log disconnections
             EXECUTE 'SET pgaudit.log_disconnections = on';
-            
+
             -- Log query parameters
             EXECUTE 'SET pgaudit.log_parameter = on';
-            
+
             -- Log statement duration (all statements)
             EXECUTE 'SET pgaudit.log_statement_once = off';
-            
+
         EXCEPTION WHEN OTHERS THEN
             RAISE WARNING 'pgaudit configuration warning: %', SQLERRM;
         END $$;
     """)
-    
+
     print("✓ pgaudit extension enabled successfully")
 
 
 def downgrade():
     """
     Rollback pgaudit extension and audit tables.
-    
+
     WARNING: This will drop the audit_log table and lose audit trail data.
     """
     # Drop audit log table
@@ -304,16 +304,16 @@ def downgrade():
     op.drop_index('idx_audit_log_user')
     op.drop_index('idx_audit_log_timestamp')
     op.drop_table('audit_log')
-    
+
     # Reset pgaudit configuration
     op.execute("""
         ALTER SYSTEM RESET shared_preload_libraries;
         SELECT pg_reload_conf();
     """)
-    
+
     # Drop pgaudit extension
     op.execute('DROP EXTENSION IF EXISTS pgaudit')
-    
+
     print("✓ pgaudit extension disabled and reverted")
 ```
 
@@ -342,7 +342,7 @@ postgres-staging:
 postgres-staging:
   image: postgres:15
   container_name: postgres-staging
-  command: 
+  command:
     - "postgres"
     - "-c"
     - "shared_preload_libraries=pgaudit"
@@ -390,18 +390,18 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- Audit insert
     IF TG_OP = 'INSERT' THEN
-        INSERT INTO audit.audit_log 
+        INSERT INTO audit.audit_log
         (timestamp, user_name, table_name, action, record_data)
         VALUES (now(), current_user, TG_TABLE_NAME, 'INSERT', row_to_json(NEW));
         RETURN NEW;
-    
+
     -- Audit update
     ELSIF TG_OP = 'UPDATE' THEN
         INSERT INTO audit.audit_log
         (timestamp, user_name, table_name, action, record_data, previous_data)
         VALUES (now(), current_user, TG_TABLE_NAME, 'UPDATE', row_to_json(NEW), row_to_json(OLD));
         RETURN NEW;
-    
+
     -- Audit delete
     ELSIF TG_OP = 'DELETE' THEN
         INSERT INTO audit.audit_log
@@ -409,7 +409,7 @@ BEGIN
         VALUES (now(), current_user, TG_TABLE_NAME, 'DELETE', row_to_json(OLD));
         RETURN OLD;
     END IF;
-    
+
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -516,7 +516,7 @@ docker exec postgres-staging psql -U postgres -d faceless_youtube -c \
 ```bash
 # Insert test data
 docker exec postgres-staging psql -U postgres -d faceless_youtube -c \
-  "INSERT INTO audit.audit_log (user_name, table_name, action, record_data) 
+  "INSERT INTO audit.audit_log (user_name, table_name, action, record_data)
    VALUES ('test_user', 'test_table', 'INSERT', '{}'::jsonb);"
 
 # Query audit log
@@ -572,7 +572,7 @@ INSERT INTO secrets (name, encrypted_value) VALUES (
 );
 
 -- Retrieve and decrypt
-SELECT 
+SELECT
     name,
     pgp_sym_decrypt(encrypted_value, 'master-encryption-key') AS decrypted_value
 FROM secrets
@@ -587,7 +587,7 @@ WHERE name = 'youtube_api_key';
 
 ```sql
 -- Find all modifications in last 24 hours
-SELECT 
+SELECT
     timestamp,
     user_name,
     table_name,

@@ -141,6 +141,34 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager-staging
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=http://localhost:9093"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - staging-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   nginx:
     image: nginx:alpine
     container_name: nginx-staging
@@ -311,3 +339,4 @@ volumes:
   redis-staging-data:
   loki-data:
   prometheus-data:
+  alertmanager-data:

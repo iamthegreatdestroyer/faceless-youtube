@@ -1,0 +1,189 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: "${SLACK_WEBHOOK_URL}"
+  opsgenie_api_key: "${OPSGENIE_API_KEY}"
+  pagerduty_url: "https://events.pagerduty.com/v2/enqueue"
+  smtp_from: "alertmanager@faceless-youtube.local"
+  smtp_smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+  smtp_auth_username: "${SMTP_USER}"
+  smtp_auth_password: "${SMTP_PASSWORD}"
+
+# Route tree
+route:
+  receiver: "default"
+  group_by:
+    - alertname
+    - cluster
+    - service
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+
+  # Security alerts - highest priority
+  routes:
+    - match:
+        severity: critical
+        category: security
+      receiver: "security-team"
+      group_wait: 5s
+      group_interval: 5s
+      repeat_interval: 4h
+      continue: true
+
+    - match:
+        severity: warning
+        category: security
+      receiver: "security-notifications"
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 8h
+      continue: true
+
+    # Operational alerts - high priority
+    - match:
+        severity: critical
+        category: operational
+      receiver: "ops-team"
+      group_wait: 5s
+      group_interval: 5s
+      repeat_interval: 4h
+      continue: true
+
+    - match:
+        severity: warning
+        category: operational
+      receiver: "ops-notifications"
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 8h
+
+    # Performance alerts - medium priority
+    - match:
+        category: performance
+      receiver: "performance-notifications"
+      group_wait: 15s
+      group_interval: 15s
+      repeat_interval: 12h
+
+    # Default route for everything else
+    - receiver: "default"
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+# Receivers
+receivers:
+  - name: "default"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts"
+        send_resolved: true
+
+  - name: "security-team"
+    email_configs:
+      - to: "security@example.com"
+        from: "alertmanager@faceless-youtube.local"
+        smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+        auth_username: "${SMTP_USER}"
+        auth_password: "${SMTP_PASSWORD}"
+        headers:
+          Subject: "🚨 SECURITY ALERT: {{ .GroupLabels.alertname }}"
+        html: "{{ template \"security_alert.html\" . }}"
+    pagerduty_configs:
+      - service_key: "${PAGERDUTY_SERVICE_KEY}"
+        description: "{{ .GroupLabels.alertname }}"
+        details:
+          firing: "{{ template \"pagerduty.default.instances\" .Alerts.Firing }}"
+    slack_configs:
+      - channel: "#security-alerts"
+        title: "🚨 Security Alert"
+        text: "{{ range .Alerts.Firing }}{{ .Labels.alertname }}\n{{ end }}"
+        send_resolved: false
+
+  - name: "security-notifications"
+    email_configs:
+      - to: "ops@example.com"
+        from: "alertmanager@faceless-youtube.local"
+        smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+        auth_username: "${SMTP_USER}"
+        auth_password: "${SMTP_PASSWORD}"
+        headers:
+          Subject: "⚠️ SECURITY WARNING: {{ .GroupLabels.alertname }}"
+    slack_configs:
+      - channel: "#security-warnings"
+        title: "⚠️ Security Warning"
+        text: "{{ range .Alerts.Firing }}{{ .Labels.alertname }}\n{{ end }}"
+
+  - name: "ops-team"
+    email_configs:
+      - to: "ops@example.com"
+        from: "alertmanager@faceless-youtube.local"
+        smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+        auth_username: "${SMTP_USER}"
+        auth_password: "${SMTP_PASSWORD}"
+        headers:
+          Subject: "🚨 OPERATIONAL ALERT: {{ .GroupLabels.alertname }}"
+    pagerduty_configs:
+      - service_key: "${PAGERDUTY_SERVICE_KEY}"
+        description: "{{ .GroupLabels.alertname }}"
+        details:
+          firing: "{{ template \"pagerduty.default.instances\" .Alerts.Firing }}"
+    slack_configs:
+      - channel: "#ops-alerts"
+        title: "🚨 Operational Alert"
+        text: "{{ range .Alerts.Firing }}{{ .Labels.alertname }}: {{ .Annotations.description }}\n{{ end }}"
+        send_resolved: false
+
+  - name: "ops-notifications"
+    email_configs:
+      - to: "ops@example.com"
+        from: "alertmanager@faceless-youtube.local"
+        smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+        auth_username: "${SMTP_USER}"
+        auth_password: "${SMTP_PASSWORD}"
+        headers:
+          Subject: "⚠️ OPERATIONAL WARNING: {{ .GroupLabels.alertname }}"
+    slack_configs:
+      - channel: "#ops-warnings"
+        title: "⚠️ Operational Warning"
+        text: "{{ range .Alerts.Firing }}{{ .Labels.alertname }}: {{ .Annotations.description }}\n{{ end }}"
+
+  - name: "performance-notifications"
+    slack_configs:
+      - channel: "#performance"
+        title: "📊 Performance Alert"
+        text: "{{ range .Alerts.Firing }}{{ .Labels.alertname }}: {{ .Annotations.description }}\n{{ end }}"
+    email_configs:
+      - to: "ops@example.com"
+        from: "alertmanager@faceless-youtube.local"
+        smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+        auth_username: "${SMTP_USER}"
+        auth_password: "${SMTP_PASSWORD}"
+        headers:
+          Subject: "📊 Performance Alert: {{ .GroupLabels.alertname }}"
+
+# Inhibition rules - suppress alerts based on conditions
+inhibit_rules:
+  # Don't alert on high error rate if service is down
+  - source_match:
+      severity: critical
+      alertname: ServiceUnhealthy
+    target_match:
+      category: performance
+    equal:
+      - instance
+
+  # Don't alert on slow queries if database is down
+  - source_match:
+      alertname: DatabaseConnectionFailed
+    target_match:
+      alertname: SlowDatabaseQueries
+    equal:
+      - instance
+
+  # Don't alert on memory if host is down
+  - source_match:
+      alertname: ServiceUnhealthy
+    target_match:
+      alertname: HighMemoryUsage
+    equal:
+      - instance

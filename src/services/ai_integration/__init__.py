@@ -1,7 +1,7 @@
 """
 AI Integration Module
 
-Premium AI service integrations for Doppelganger Studio:
+Premium AI service integrations for Faceless YouTube Automation Platform:
 - Claude Pro (Anthropic): Advanced reasoning, code analysis, architecture review
 - Gemini Pro (Google): Multimodal AI, image/video analysis, SEO optimization
 - Grok (xAI): Real-time trends, viral potential, niche discovery

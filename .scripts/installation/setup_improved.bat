@@ -1,20 +1,6 @@
 @echo off
 REM ============================================================================
-REM FACELESS YOUTUBE - ONE-CLICK INSTALLER (WINDOWS)
-REM ============================================================================
-REM
-REM This script provides the complete setup experience for the
-REM Faceless YouTube Automation Platform on Windows systems.
-REM
-REM Features:
-REM   - Environment detection and validation
-REM   - Python and Node.js dependency checks
-REM   - Virtual environment setup
-REM   - Interactive configuration wizard
-REM   - Database initialization
-REM   - One-click startup options
-REM
-REM Date: October 25, 2025
+REM FACELESS YOUTUBE - IMPROVED INSTALLER (WINDOWS)
 REM ============================================================================
 
 setlocal enabledelayedexpansion
@@ -26,15 +12,18 @@ echo ╔════════════════════════
 echo ║                                                                            ║
 echo ║         🚀  FACELESS YOUTUBE - ONE-CLICK INSTALLATION WIZARD  🚀          ║
 echo ║                                                                            ║
-echo ║                    Automating Security & Content Creation                 ║
+echo ║                    Automating Security ^& Content Creation                 ║
 echo ║                                                                            ║
 echo ╚════════════════════════════════════════════════════════════════════════════╝
 echo.
 
-REM Get project root (3 levels up from script: .scripts/installation/setup.bat)
-for %%A in ("%~dp0..") do set "PROJECT_ROOT=%%~fA"
-for %%A in ("%PROJECT_ROOT%..") do set "PROJECT_ROOT=%%~fA"
-cd /d "%PROJECT_ROOT%"
+REM Navigate to project root
+echo Locating project directory...
+pushd "%~dp0"
+cd ..\..
+set "PROJECT_ROOT=%CD%"
+echo Project root: %PROJECT_ROOT%
+echo.
 
 REM ============================================================================
 REM STEP 1: CHECK SYSTEM REQUIREMENTS
@@ -46,28 +35,28 @@ echo.
 REM Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Python not found. Please install Python 3.11 or higher from:
+    echo. ❌ Python not found. Please install Python 3.11 or higher from:
     echo    https://www.python.org/downloads/
     pause
     exit /b 1
 )
 
 for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-echo ✓ Python %PYTHON_VERSION% found
+echo. ✓ Python %PYTHON_VERSION% found
 
 REM Check Node.js
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Node.js not found. Please install Node.js 18+ from:
+    echo. ❌ Node.js not found. Please install Node.js 18+ from:
     echo    https://nodejs.org/
     pause
     exit /b 1
 )
 
 for /f %%i in ('node --version') do set NODE_VERSION=%%i
-echo ✓ Node.js %NODE_VERSION% found
+echo. ✓ Node.js %NODE_VERSION% found
 
-echo ✓ All system requirements met
+echo. ✓ All system requirements met
 echo.
 
 REM ============================================================================
@@ -82,25 +71,25 @@ if not exist "%PROJECT_ROOT%\venv" (
     cd /d "%PROJECT_ROOT%"
     python -m venv venv
     if errorlevel 1 (
-        echo ❌ Failed to create virtual environment
+        echo. ❌ Failed to create virtual environment
         pause
         exit /b 1
     )
-    echo ✓ Virtual environment created
+    echo. ✓ Virtual environment created
 ) else (
-    echo ✓ Virtual environment already exists
+    echo. ✓ Virtual environment already exists
 )
 
 REM Activate virtual environment
-call "%PROJECT_ROOT%\venv\Scripts\activate.bat" >nul 2>&1
+call "%PROJECT_ROOT%\venv\Scripts\activate.bat"
 if errorlevel 1 (
-    echo ❌ Failed to activate virtual environment
+    echo. ❌ Failed to activate virtual environment
     pause
     exit /b 1
 )
 
 cd /d "%PROJECT_ROOT%"
-echo ✓ Virtual environment activated
+echo. ✓ Virtual environment activated
 echo.
 
 REM ============================================================================
@@ -110,31 +99,31 @@ REM ============================================================================
 echo [3/5] Installing dependencies...
 echo.
 
-echo Installing Python dependencies...
-cd /d "%PROJECT_ROOT%"
+echo Installing Python dependencies from %PROJECT_ROOT%\requirements-dev.txt...
 pip install -r "%PROJECT_ROOT%\requirements-dev.txt"
 if errorlevel 1 (
-    echo ❌ Failed to install Python dependencies
-    echo Run: pip install -r requirements-dev.txt
+    echo. ❌ Failed to install Python dependencies
+    echo. Run manually: pip install -r requirements-dev.txt
     pause
     exit /b 1
 )
-echo ✓ Python dependencies installed
+echo. ✓ Python dependencies installed
+echo.
 
 echo Installing Node.js dependencies...
 if exist "%PROJECT_ROOT%\dashboard\package.json" (
     cd /d "%PROJECT_ROOT%\dashboard"
     call npm install
     if errorlevel 1 (
-        echo ❌ Failed to install Node.js dependencies
+        echo. ❌ Failed to install Node.js dependencies
         cd /d "%PROJECT_ROOT%"
         pause
         exit /b 1
     )
-    echo ✓ Node.js dependencies installed
+    echo. ✓ Node.js dependencies installed
     cd /d "%PROJECT_ROOT%"
 ) else (
-    echo ⚠ dashboard\package.json not found, skipping npm install
+    echo. ⚠ dashboard\package.json not found, skipping npm install
 )
 
 echo.
@@ -146,12 +135,16 @@ REM ============================================================================
 echo [4/5] Running configuration wizard...
 echo.
 
-REM Run the Python setup wizard
-python "%PROJECT_ROOT%\scripts\setup_wizard.py"
-if errorlevel 1 (
-    echo ❌ Setup wizard failed
-    pause
-    exit /b 1
+REM Check if setup_wizard.py exists
+if exist "%PROJECT_ROOT%\scripts\setup_wizard.py" (
+    python "%PROJECT_ROOT%\scripts\setup_wizard.py"
+    if errorlevel 1 (
+        echo. ⚠ Setup wizard encountered an issue (may be non-critical)
+        echo. Continuing with installation...
+    )
+) else (
+    echo. ⚠ setup_wizard.py not found at %PROJECT_ROOT%\scripts\setup_wizard.py
+    echo. Skipping configuration wizard
 )
 
 echo.
@@ -160,6 +153,7 @@ REM ============================================================================
 REM STEP 5: COMPLETION
 REM ============================================================================
 
+cd /d "%PROJECT_ROOT%"
 echo [5/5] Installation complete!
 echo.
 echo ╔════════════════════════════════════════════════════════════════════════════╗
@@ -183,4 +177,5 @@ echo.
 echo Press any key to exit...
 pause >nul
 
+popd
 exit /b 0

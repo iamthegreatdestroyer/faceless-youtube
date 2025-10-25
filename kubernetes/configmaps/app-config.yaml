@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-config
-  namespace: doppelganger-studio
+  namespace: faceless-youtube
 data:
   # Application configuration
   APP_ENV: "production"
@@ -11,7 +11,7 @@ data:
   # Database configuration
   DATABASE_HOST: "postgres-service"
   DATABASE_PORT: "5432"
-  DATABASE_NAME: "doppelganger_db"
+  DATABASE_NAME: "faceless_youtube_db"
 
   # Redis configuration
   REDIS_HOST: "redis-service"

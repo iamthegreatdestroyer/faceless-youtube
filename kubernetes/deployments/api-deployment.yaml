@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api
-  namespace: doppelganger-studio
+  namespace: faceless-youtube
   labels:
-    app: doppelganger-api
+    app: faceless-youtube-api
     component: backend
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: doppelganger-api
+      app: faceless-youtube-api
   template:
     metadata:
       labels:
-        app: doppelganger-api
+        app: faceless-youtube-api
     spec:
       containers:
         - name: api
-          image: doppelganger-studio/api:latest
+          image: faceless-youtube/api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -70,11 +70,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: api-service
-  namespace: doppelganger-studio
+  namespace: faceless-youtube
 spec:
   type: ClusterIP
   selector:
-    app: doppelganger-api
+    app: faceless-youtube-api
   ports:
     - port: 8000
       targetPort: 8000

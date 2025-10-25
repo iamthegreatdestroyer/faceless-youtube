@@ -1,6 +1,6 @@
 # Kubernetes Deployment Configuration
 
-This directory contains Kubernetes manifests for deploying Doppelganger Studio to a production cluster.
+This directory contains Kubernetes manifests for deploying Faceless YouTube Automation Platform to a production cluster.
 
 ## Directory Structure
 
@@ -94,8 +94,8 @@ kubectl apply -f ingress/
 ### 8. Monitor Deployment
 
 ```bash
-kubectl get pods -n doppelganger-studio
-kubectl logs -f deployment/api -n doppelganger-studio
+kubectl get pods -n faceless-youtube
+kubectl logs -f deployment/api -n faceless-youtube
 ```
 
 ## Scaling
@@ -103,13 +103,13 @@ kubectl logs -f deployment/api -n doppelganger-studio
 ### Scale API Workers
 
 ```bash
-kubectl scale deployment api --replicas=5 -n doppelganger-studio
+kubectl scale deployment api --replicas=5 -n faceless-youtube
 ```
 
 ### Scale Background Workers
 
 ```bash
-kubectl scale deployment worker --replicas=10 -n doppelganger-studio
+kubectl scale deployment worker --replicas=10 -n faceless-youtube
 ```
 
 ## Monitoring
@@ -117,7 +117,7 @@ kubectl scale deployment worker --replicas=10 -n doppelganger-studio
 Access Grafana dashboards:
 
 ```bash
-kubectl port-forward svc/grafana 3000:3000 -n doppelganger-studio
+kubectl port-forward svc/grafana 3000:3000 -n faceless-youtube
 ```
 
 Then navigate to http://localhost:3000
@@ -127,19 +127,19 @@ Then navigate to http://localhost:3000
 ### Check Pod Status
 
 ```bash
-kubectl describe pod <pod-name> -n doppelganger-studio
+kubectl describe pod <pod-name> -n faceless-youtube
 ```
 
 ### View Logs
 
 ```bash
-kubectl logs -f <pod-name> -n doppelganger-studio
+kubectl logs -f <pod-name> -n faceless-youtube
 ```
 
 ### Execute Commands in Pod
 
 ```bash
-kubectl exec -it <pod-name> -n doppelganger-studio -- /bin/bash
+kubectl exec -it <pod-name> -n faceless-youtube -- /bin/bash
 ```
 
 ## Production Considerations

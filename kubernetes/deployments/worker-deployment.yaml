@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worker
-  namespace: doppelganger-studio
+  namespace: faceless-youtube
   labels:
-    app: doppelganger-worker
+    app: faceless-youtube-worker
     component: backend
 spec:
   replicas: 5
   selector:
     matchLabels:
-      app: doppelganger-worker
+      app: faceless-youtube-worker
   template:
     metadata:
       labels:
-        app: doppelganger-worker
+        app: faceless-youtube-worker
     spec:
       containers:
         - name: worker
-          image: doppelganger-studio/worker:latest
+          image: faceless-youtube/worker:latest
           imagePullPolicy: Always
           env:
             - name: DATABASE_URL

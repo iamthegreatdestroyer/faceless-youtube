@@ -498,7 +498,7 @@ DATABASE_URL: postgresql://${POSTGRES_USER:-dev}:${POSTGRES_PASSWORD:-dev_passwo
 
 ### 4.4 Kubernetes Configuration
 
-**Namespace:** `doppelganger-studio`
+**Namespace:** `faceless-youtube`
 
 **ConfigMap:** `app-config` (38 lines)
 
@@ -573,7 +573,7 @@ envFrom:
    kind: Secret
    metadata:
      name: database-credentials
-     namespace: doppelganger-studio
+     namespace: faceless-youtube
    type: Opaque
    data:
      DATABASE_URL: <base64-encoded>
@@ -587,7 +587,7 @@ envFrom:
    kind: Secret
    metadata:
      name: api-keys
-     namespace: doppelganger-studio
+     namespace: faceless-youtube
    type: Opaque
    data:
      PEXELS_API_KEY: <base64-encoded>
@@ -683,13 +683,13 @@ envFrom:
    # Create database credentials secret
    kubectl create secret generic database-credentials \
      --from-literal=DATABASE_URL="postgresql://..." \
-     --namespace=doppelganger-studio
+     --namespace=faceless-youtube
 
    # Create API keys secret
    kubectl create secret generic api-keys \
      --from-literal=PEXELS_API_KEY="..." \
      --from-literal=PIXABAY_API_KEY="..." \
-     --namespace=doppelganger-studio
+     --namespace=faceless-youtube
    ```
 
 3. **🟡 EXPAND MASTER_CONFIG.PY**

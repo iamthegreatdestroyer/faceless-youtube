@@ -840,11 +840,11 @@ except Exception as e:
 
 ### Support
 
-- Email: support@doppelganger-studio.com
+- Email: support@faceless-youtube.com
 - Slack: #ai-integrations channel
 
 ---
 
 **Last Updated**: 2025-05-31  
 **Version**: 1.0  
-**Maintained By**: Doppelganger Studio Team
+**Maintained By**: Faceless YouTube Team

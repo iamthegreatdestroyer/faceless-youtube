@@ -1,5 +1,5 @@
 """
-MCP Servers for Doppelganger Studio
+MCP Servers for Faceless YouTube Automation Platform
 
 Model Context Protocol servers exposing:
 - YouTube Analytics data for AI-driven insights

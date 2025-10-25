@@ -14,7 +14,7 @@ function Sidebar() {
     <div className="w-64 bg-gray-900 border-r border-gray-700">
       <div className="flex items-center justify-center h-16 border-b border-gray-700">
         <Film className="w-8 h-8 text-primary-500 mr-2" />
-        <h1 className="text-xl font-bold text-white">DOPPELGANGER</h1>
+        <h1 className="text-xl font-bold text-white">FACELESS YOUTUBE</h1>
       </div>
       
       <nav className="mt-6 px-4">
@@ -40,7 +40,7 @@ function Sidebar() {
 
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
         <div className="text-xs text-gray-500 text-center">
-          <p>DOPPELGANGER STUDIO</p>
+          <p>FACELESS YOUTUBE</p>
           <p className="mt-1">v1.0.0</p>
         </div>
       </div>

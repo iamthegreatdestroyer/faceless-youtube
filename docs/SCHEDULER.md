@@ -928,7 +928,7 @@ See main project README for contribution guidelines.
 
 ## License
 
-Copyright (c) 2024 DOPPELGANGER STUDIO. All Rights Reserved.
+Copyright (c) 2024 Faceless YouTube Automation Platform. All Rights Reserved.
 
 ---
 

@@ -30,19 +30,19 @@ RUN mkdir -p /tmp/nginx-src && \
     curl -fSL http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar xz && \
     cd nginx-${NGINX_VERSION} && \
     ./configure \
-        --prefix=/etc/nginx \
-        --sbin-path=/usr/sbin/nginx \
-        --modules-path=/usr/lib64/nginx/modules \
-        --conf-path=/etc/nginx/nginx.conf \
-        --error-log-path=/var/log/nginx/error.log \
-        --http-log-path=/var/log/nginx/access.log \
-        --pid-path=/var/run/nginx.pid \
-        --lock-path=/var/run/nginx.lock \
-        --with-http_ssl_module \
-        --with-http_v2_module \
-        --with-http_realip_module \
-        --with-http_gzip_static_module \
-        --add-dynamic-module=/tmp/modsecurity-nginx && \
+    --prefix=/etc/nginx \
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib64/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx.pid \
+    --lock-path=/var/run/nginx.lock \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_realip_module \
+    --with-http_gzip_static_module \
+    --add-dynamic-module=/tmp/modsecurity-nginx && \
     make && \
     make install
 
@@ -105,170 +105,170 @@ pid /var/run/nginx.pid;
 load_module modules/ngx_http_modsecurity_module.so;
 
 events {
-    worker_connections 2048;
-    use epoll;
-    multi_accept on;
+worker_connections 2048;
+use epoll;
+multi_accept on;
 }
 
 http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
+include /etc/nginx/mime.types;
+default_type application/octet-stream;
 
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
+log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+'$status $body_bytes_sent "$http_referer" '
+'"$http_user_agent" "$http_x_forwarded_for"';
 
-    log_format waf_log '$remote_addr - $remote_user [$time_local] '
-        '"$request" $status $body_bytes_sent '
-        '"$http_referer" "$http_user_agent"';
+log_format waf_log '$remote_addr - $remote_user [$time_local] '
+'"$request" $status $body_bytes_sent '
+'"$http_referer" "$http_user_agent"';
 
-    access_log /var/log/nginx/access.log main;
+access_log /var/log/nginx/access.log main;
 
-    # Performance optimizations
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    types_hash_max_size 2048;
-    server_tokens off;
+# Performance optimizations
+sendfile on;
+tcp_nopush on;
+tcp_nodelay on;
+keepalive_timeout 65;
+types_hash_max_size 2048;
+server_tokens off;
 
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css text/xml text/javascript 
-               application/json application/javascript application/xml+rss 
-               application/atom+xml image/svg+xml;
+# Gzip compression
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 6;
+gzip_types text/plain text/css text/xml text/javascript 
+application/json application/javascript application/xml+rss 
+application/atom+xml image/svg+xml;
 
-    # Rate limiting zones
-    limit_req_zone $binary_remote_addr zone=general:10m rate=10r/s;
-    limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
-    limit_req_zone $binary_remote_addr zone=upload:10m rate=10r/h;
+# Rate limiting zones
+limit_req_zone $binary_remote_addr zone=general:10m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
+limit_req_zone $binary_remote_addr zone=upload:10m rate=10r/h;
 
-    # Upstream configuration
-    upstream faceless_api {
-        server api-staging:8000 max_fails=3 fail_timeout=30s;
-        keepalive 32;
-    }
+# Upstream configuration
+upstream faceless_api {
+server api-staging:8000 max_fails=3 fail_timeout=30s;
+keepalive 32;
+}
 
-    upstream faceless_dashboard {
-        server dashboard-staging:3000 max_fails=3 fail_timeout=30s;
-        keepalive 32;
-    }
+upstream faceless_dashboard {
+server dashboard-staging:3000 max_fails=3 fail_timeout=30s;
+keepalive 32;
+}
 
-    # HTTPS redirect
-    server {
-        listen 80;
-        listen [::]:80;
-        server_name _;
-        return 301 https://$host$request_uri;
-    }
+# HTTPS redirect
+server {
+listen 80;
+listen [::]:80;
+server_name _;
+return 301 https://$host$request_uri;
+}
 
-    # Main HTTPS server with ModSecurity
-    server {
-        listen 443 ssl http2;
-        listen [::]:443 ssl http2;
-        server_name api.faceless-youtube.local dashboard.faceless-youtube.local localhost;
+# Main HTTPS server with ModSecurity
+server {
+listen 443 ssl http2;
+listen [::]:443 ssl http2;
+server_name api.faceless-youtube.local dashboard.faceless-youtube.local localhost;
 
-        # SSL Configuration
-        ssl_certificate /etc/nginx/ssl/cert.pem;
-        ssl_certificate_key /etc/nginx/ssl/key.pem;
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers HIGH:!aNULL:!MD5;
-        ssl_prefer_server_ciphers on;
-        ssl_session_cache shared:SSL:10m;
-        ssl_session_timeout 10m;
+# SSL Configuration
+ssl_certificate /etc/nginx/ssl/cert.pem;
+ssl_certificate_key /etc/nginx/ssl/key.pem;
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers HIGH:!aNULL:!MD5;
+ssl_prefer_server_ciphers on;
+ssl_session_cache shared:SSL:10m;
+ssl_session_timeout 10m;
 
-        # Security Headers
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-        add_header X-Frame-Options "DENY" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+# Security Headers
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-        # Health check endpoint (no WAF)
-        location /health {
-            access_log off;
-            modsecurity off;
-            proxy_pass http://faceless_api;
-            proxy_set_header Host $host;
-            proxy_connect_timeout 5s;
-            proxy_send_timeout 5s;
-            proxy_read_timeout 5s;
-        }
+# Health check endpoint (no WAF)
+location /health {
+access_log off;
+modsecurity off;
+proxy_pass http://faceless_api;
+proxy_set_header Host $host;
+proxy_connect_timeout 5s;
+proxy_send_timeout 5s;
+proxy_read_timeout 5s;
+}
 
-        # Metrics endpoint (no WAF)
-        location /metrics {
-            access_log off;
-            modsecurity off;
-            proxy_pass http://faceless_api;
-            proxy_set_header Host $host;
-            proxy_connect_timeout 5s;
-            proxy_send_timeout 5s;
-            proxy_read_timeout 5s;
-        }
+# Metrics endpoint (no WAF)
+location /metrics {
+access_log off;
+modsecurity off;
+proxy_pass http://faceless_api;
+proxy_set_header Host $host;
+proxy_connect_timeout 5s;
+proxy_send_timeout 5s;
+proxy_read_timeout 5s;
+}
 
-        # API endpoints with WAF protection
-        location /api/ {
-            modsecurity on;
-            modsecurity_rules_file /etc/modsecurity/modsecurity.conf;
+# API endpoints with WAF protection
+location /api/ {
+modsecurity on;
+modsecurity_rules_file /etc/modsecurity/modsecurity.conf;
 
-            limit_req zone=api burst=20 nodelay;
+limit_req zone=api burst=20 nodelay;
 
-            proxy_pass http://faceless_api;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header Connection "";
+proxy_pass http://faceless_api;
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header Connection "";
 
-            proxy_connect_timeout 60s;
-            proxy_send_timeout 60s;
-            proxy_read_timeout 60s;
+proxy_connect_timeout 60s;
+proxy_send_timeout 60s;
+proxy_read_timeout 60s;
 
-            # CORS headers
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
-        }
+# CORS headers
+add_header 'Access-Control-Allow-Origin' '*' always;
+add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+}
 
-        # Dashboard endpoint
-        location / {
-            modsecurity on;
-            modsecurity_rules_file /etc/modsecurity/modsecurity.conf;
+# Dashboard endpoint
+location / {
+modsecurity on;
+modsecurity_rules_file /etc/modsecurity/modsecurity.conf;
 
-            limit_req zone=general burst=20 nodelay;
+limit_req zone=general burst=20 nodelay;
 
-            proxy_pass http://faceless_dashboard;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+proxy_pass http://faceless_dashboard;
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
 
-            proxy_connect_timeout 60s;
-            proxy_send_timeout 120s;
-            proxy_read_timeout 120s;
-        }
+proxy_connect_timeout 60s;
+proxy_send_timeout 120s;
+proxy_read_timeout 120s;
+}
 
-        # Deny sensitive files
-        location ~ /\. {
-            deny all;
-            access_log off;
-            log_not_found off;
-        }
-    }
+# Deny sensitive files
+location ~ /\. {
+deny all;
+access_log off;
+log_not_found off;
+}
+}
 }
 EOF
 
 # Create default SSL certificates (self-signed for staging)
 RUN mkdir -p /etc/nginx/ssl && \
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout /etc/nginx/ssl/key.pem \
-        -out /etc/nginx/ssl/cert.pem \
-        -subj "/CN=localhost"
+    -keyout /etc/nginx/ssl/key.pem \
+    -out /etc/nginx/ssl/cert.pem \
+    -subj "/CN=localhost"
 
 # Copy WAF event processor script
 COPY src/security/waf_logger.py /opt/waf_scripts/waf_logger.py
@@ -289,9 +289,9 @@ sleep 2
 
 # Start WAF event processor (if file exists)
 if [ -f /opt/waf_scripts/waf_logger.py ]; then
-    echo "Starting WAF event processor..."
-    python3 /opt/waf_scripts/waf_logger.py &
-    WAF_PID=$!
+echo "Starting WAF event processor..."
+python3 /opt/waf_scripts/waf_logger.py &
+WAF_PID=$!
 fi
 
 # Wait for all processes

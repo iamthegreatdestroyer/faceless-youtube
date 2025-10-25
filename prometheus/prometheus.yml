@@ -1,0 +1,90 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: staging
+    application: faceless-youtube
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alert-rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+    metrics_path: "/metrics"
+
+  # FastAPI / Uvicorn metrics
+  - job_name: "fastapi"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["api:8000"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "api-staging"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "^(fastapi_|http_|requests_|response_|database_|redis_).*"
+        action: keep
+
+  # PostgreSQL exporter
+  - job_name: "postgresql"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "^(pg_|postgres_).*"
+        action: keep
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "postgres-staging"
+
+  # Redis exporter
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "redis-staging"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "^(redis_|commands_|connected_|memory_).*"
+        action: keep
+
+  # Node exporter (system metrics)
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "node-staging"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "^(node_|process_).*"
+        action: keep
+
+  # Nginx exporter
+  - job_name: "nginx"
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "nginx-staging"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "^(nginx_).*"
+        action: keep

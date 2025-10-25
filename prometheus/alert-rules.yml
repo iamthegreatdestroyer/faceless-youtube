@@ -1,0 +1,174 @@
+groups:
+  - name: security_alerts
+    interval: 15s
+    rules:
+      # Alert on high rate of failed authentication
+      - alert: HighFailedAuthAttempts
+        expr: rate(http_requests_total{status="401"}[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High rate of failed authentication attempts"
+          description: "{{ $value | humanize }} failed auth attempts per second on {{ $labels.instance }}"
+
+      # Alert on high rate of rate-limited requests
+      - alert: HighRateLimitExceeded
+        expr: rate(http_requests_total{status="429"}[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Rate limit threshold exceeded"
+          description: "{{ $value | humanize }} rate-limited requests per second on {{ $labels.instance }}"
+
+      # Alert on SSL certificate expiration
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_cert_not_before_seconds / 86400 < 30
+        for: 1h
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate on {{ $labels.instance }} will expire in less than 30 days"
+
+      # Alert on database connection failures
+      - alert: DatabaseConnectionFailed
+        expr: pg_up == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Database connection failed"
+          description: "Cannot connect to PostgreSQL on {{ $labels.instance }}"
+
+  - name: performance_alerts
+    interval: 15s
+    rules:
+      # Alert on high request latency (P95)
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, http_request_duration_seconds_bucket) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High request latency detected"
+          description: "P95 latency is {{ $value | humanizeDuration }} on {{ $labels.instance }}"
+
+      # Alert on high error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # Alert on slow database queries
+      - alert: SlowDatabaseQueries
+        expr: pg_slow_query_count > 10
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow database queries detected"
+          description: "{{ $value }} slow queries in the last 10 minutes on {{ $labels.instance }}"
+
+      # Alert on low database cache hit ratio
+      - alert: LowCacheHitRatio
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) < 0.95
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Low database cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # Alert on high Redis memory usage
+      - alert: HighRedisMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+  - name: operational_alerts
+    interval: 15s
+    rules:
+      # Alert on service health check failure
+      - alert: ServiceUnhealthy
+        expr: up{job=~"fastapi|postgresql|redis|nginx"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: operational
+        annotations:
+          summary: "Service health check failed"
+          description: "{{ $labels.job }} on {{ $labels.instance }} is down"
+
+      # Alert on low disk space
+      - alert: LowDiskSpace
+        expr: node_filesystem_avail_bytes{fstype!~"tmpfs|fuse"} / node_filesystem_size_bytes < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: operational
+        annotations:
+          summary: "Low disk space"
+          description: "{{ $labels.mountpoint }} has less than 10% free space on {{ $labels.instance }}"
+
+      # Alert on high CPU usage
+      - alert: HighCPUUsage
+        expr: rate(node_cpu_seconds_total{mode="idle"}[5m]) < 0.2
+        for: 10m
+        labels:
+          severity: warning
+          category: operational
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is high on {{ $labels.instance }}"
+
+      # Alert on high memory usage
+      - alert: HighMemoryUsage
+        expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: operational
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # Alert on backup failure
+      - alert: BackupJobFailed
+        expr: backup_last_success_timestamp < (time() - 86400)
+        for: 1h
+        labels:
+          severity: critical
+          category: operational
+        annotations:
+          summary: "Backup job failed"
+          description: "Last successful backup was more than 24 hours ago on {{ $labels.instance }}"
+
+      # Alert on persistent volume usage
+      - alert: PersistentVolumeNearCapacity
+        expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          category: operational
+        annotations:
+          summary: "Persistent volume near capacity"
+          description: "PV {{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full"

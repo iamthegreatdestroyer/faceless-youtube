@@ -1,0 +1,130 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+  log_format: json
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: staging
+
+scrape_configs:
+  # FastAPI Application Logs
+  - job_name: fastapi
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: fastapi
+          service: api
+          environment: staging
+          __path__: /var/log/fastapi/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            request_id: request_id
+            endpoint: endpoint
+            method: method
+            status_code: status_code
+            duration_ms: duration_ms
+            error: error
+      - labels:
+          level:
+          service: api
+          environment: staging
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02T15:04:05.000Z07:00"
+      - output:
+          source: message
+
+  # PostgreSQL Logs
+  - job_name: postgresql
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: postgresql
+          service: database
+          environment: staging
+          __path__: /var/log/postgresql/*.log
+    pipeline_stages:
+      - regex:
+          expression: "^(?P<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\[(?P<level>\\w+)\\] (?P<message>.*)$"
+      - labels:
+          level:
+          service: database
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+
+  # Nginx Access Logs
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          service: reverse_proxy
+          environment: staging
+          __path__: /var/log/nginx/access.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            remote_addr: remote_addr
+            method: method
+            request_uri: request_uri
+            status: status
+            bytes_sent: bytes_sent
+            request_time: request_time
+      - labels:
+          service: nginx
+          environment: staging
+      - output:
+          source: message
+
+  # Docker Container Logs
+  - job_name: docker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            log: log
+            stream: stream
+      - timestamp:
+          source: time
+          format: "2006-01-02T15:04:05.000000000Z07:00"
+      - labels:
+          stream:
+      - output:
+          source: log
+
+  # System Logs
+  - job_name: syslog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          service: system
+          environment: staging
+          __path__: /var/log/syslog
+    pipeline_stages:
+      - regex:
+          expression: "^(?P<timestamp>\\w{3}\\s+\\d{2} \\d{2}:\\d{2}:\\d{2}) (?P<hostname>\\S+) (?P<process>\\S+)\\[(?P<pid>\\d+)\\]: (?P<message>.*)$"
+      - labels:
+          service: system
+      - output:
+          source: message

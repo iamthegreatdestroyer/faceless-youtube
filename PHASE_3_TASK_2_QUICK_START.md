@@ -12,6 +12,7 @@
 Deploy ModSecurity Web Application Firewall (WAF) with OWASP Core Rule Set v4.0 to provide application-layer attack prevention.
 
 **Key Objectives:**
+
 1. Configure ModSecurity as Nginx module
 2. Deploy OWASP Core Rule Set v4.0 (300+ rules)
 3. Implement audit logging and forensics
@@ -19,6 +20,7 @@ Deploy ModSecurity Web Application Firewall (WAF) with OWASP Core Rule Set v4.0 
 5. Build Grafana dashboard
 
 **Success Criteria:**
+
 - ✅ Block all OWASP Top 10 attacks
 - ✅ 0% legitimate request blocking
 - ✅ <10ms latency added
@@ -30,6 +32,7 @@ Deploy ModSecurity Web Application Firewall (WAF) with OWASP Core Rule Set v4.0 
 ## 📋 Deliverables Checklist
 
 **Primary Deliverables:**
+
 - [ ] `modsecurity/modsecurity.conf` - Core WAF configuration
 - [ ] `modsecurity/crs-setup.conf` - OWASP CRS v4.0 setup
 - [ ] `modsecurity/crs/rules/` - CRS rule files
@@ -39,6 +42,7 @@ Deploy ModSecurity Web Application Firewall (WAF) with OWASP Core Rule Set v4.0 
 - [ ] Grafana WAF dashboard JSON
 
 **Support Files:**
+
 - [ ] `modsecurity/modsecurity-custom-rules.conf` - Application-specific rules
 - [ ] `nginx/modsecurity-locations.conf` - URL-based WAF tuning
 - [ ] `docker-compose.staging.yml` - Nginx update
@@ -48,6 +52,7 @@ Deploy ModSecurity Web Application Firewall (WAF) with OWASP Core Rule Set v4.0 
 ## 🚀 Implementation Steps
 
 ### Step 1: Create ModSecurity Configuration (30 min)
+
 ```
 File: modsecurity/modsecurity.conf
 Tasks:
@@ -60,6 +65,7 @@ Tasks:
 ```
 
 ### Step 2: Setup OWASP CRS (45 min)
+
 ```
 File: modsecurity/crs-setup.conf
 Tasks:
@@ -72,6 +78,7 @@ Tasks:
 ```
 
 ### Step 3: Nginx Integration (45 min)
+
 ```
 File: nginx/nginx.conf
 Tasks:
@@ -83,6 +90,7 @@ Tasks:
 ```
 
 ### Step 4: WAF Event Processor (30 min)
+
 ```
 File: src/security/waf_logger.py
 Tasks:
@@ -94,6 +102,7 @@ Tasks:
 ```
 
 ### Step 5: Testing & Validation (20 min)
+
 ```
 Tasks:
 - Test attack scenarios
@@ -120,6 +129,7 @@ Tasks:
 10. **Insufficient Logging/Monitoring** - 10+ rules
 
 **Additional Protections:**
+
 - Protocol enforcement (HTTP/2, TLS validation)
 - Scanner detection (Nmap, Nikto, etc.)
 - Bot detection (unusual behavior)
@@ -134,6 +144,7 @@ Tasks:
 ## 📊 Configuration Details
 
 ### ModSecurity Modes
+
 ```
 SecRuleEngine On        # Full blocking mode
 SecAuditLogRelevantOnly # Only log relevant events
@@ -141,6 +152,7 @@ SecAuditLogStatus       # Log based on HTTP status
 ```
 
 ### Paranoia Levels
+
 ```
 PL1: 0-2 false positives per 1000 requests (default)
 PL2: More sensitive, slight FP increase
@@ -149,6 +161,7 @@ PL4: Maximum sensitivity, tuning required
 ```
 
 ### Rule Actions
+
 ```
 ALLOW   - Allow request
 DENY    - Block request (403)
@@ -161,6 +174,7 @@ PASS    - Log but don't block
 ## 🔍 Testing Scenarios
 
 **Test Cases:**
+
 1. SQL Injection: `' OR '1'='1`
 2. XSS: `<script>alert('xss')</script>`
 3. Command Injection: `; ls -la`
@@ -173,23 +187,25 @@ PASS    - Log but don't block
 
 ## 📈 Performance Targets
 
-| Metric | Target | Notes |
-| --- | --- | --- |
-| **Latency Added** | <10ms | Per request overhead |
-| **Throughput** | >1000 req/s | Staging benchmark |
-| **Memory** | <100MB | ModSecurity + CRS |
-| **CPU** | <5% per core | At 100 req/s |
-| **Block Latency** | <1ms | Decision time |
-| **Audit Logging** | <2ms | Per blocked request |
+| Metric            | Target       | Notes                |
+| ----------------- | ------------ | -------------------- |
+| **Latency Added** | <10ms        | Per request overhead |
+| **Throughput**    | >1000 req/s  | Staging benchmark    |
+| **Memory**        | <100MB       | ModSecurity + CRS    |
+| **CPU**           | <5% per core | At 100 req/s         |
+| **Block Latency** | <1ms         | Decision time        |
+| **Audit Logging** | <2ms         | Per blocked request  |
 
 ---
 
 ## 🔗 Integration Points
 
 **Upstream:**
+
 - Nginx receiving client requests
 
 **Downstream:**
+
 - ModSecurity audit logs
 - WAF event processor
 - Alertmanager notifications
@@ -201,12 +217,14 @@ PASS    - Log but don't block
 ## 📚 Reference Files
 
 **From Task 1 (Already Complete):**
+
 - IDS processor pattern: `src/security/ids_alerter.py`
 - Alert notification format: `AlertNotification` model
 - Docker compose structure: `docker-compose.staging.yml`
 - Test patterns: `tests/security/test_ids_alerter.py`
 
 **For Task 2:**
+
 - Use similar async logging patterns
 - Reuse alert models from Task 1
 - Follow same Docker integration approach
@@ -216,20 +234,21 @@ PASS    - Log but don't block
 
 ## ⏱️ Time Breakdown
 
-| Component | Time | Status |
-| --- | --- | --- |
-| ModSecurity config | 30 min | ⏳ |
-| OWASP CRS setup | 45 min | ⏳ |
-| Nginx integration | 45 min | ⏳ |
-| WAF event processor | 30 min | ⏳ |
-| Testing & validation | 20 min | ⏳ |
-| **TOTAL** | **2.5-3 hours** | **READY** |
+| Component            | Time            | Status    |
+| -------------------- | --------------- | --------- |
+| ModSecurity config   | 30 min          | ⏳        |
+| OWASP CRS setup      | 45 min          | ⏳        |
+| Nginx integration    | 45 min          | ⏳        |
+| WAF event processor  | 30 min          | ⏳        |
+| Testing & validation | 20 min          | ⏳        |
+| **TOTAL**            | **2.5-3 hours** | **READY** |
 
 ---
 
 ## ✅ Ready to Begin?
 
 **Prerequisites Met:**
+
 - ✅ Task 1 complete (IDS/IPS)
 - ✅ Docker compose configured
 - ✅ Monitoring stack operational
@@ -237,6 +256,7 @@ PASS    - Log but don't block
 - ✅ Test patterns established
 
 **Command to Start Task 2:**
+
 ```bash
 # When ready, proceed with WAF implementation
 # All specifications in PHASE_3_ADVANCED_SECURITY_PLAN.md
@@ -245,12 +265,13 @@ PASS    - Log but don't block
 ---
 
 **Task 2 is ready to begin immediately after Task 1 completion.**  
-*Estimated completion: 2.5-3 hours from start*  
-*Target completion: Oct 25, 18:00 UTC (alongside other foundation tasks)*
+_Estimated completion: 2.5-3 hours from start_  
+_Target completion: Oct 25, 18:00 UTC (alongside other foundation tasks)_
 
 ---
 
 **Next Phase 3 Tasks After Task 2:**
+
 - Task 3: Vulnerability Scanning (2-2.5h)
 - Task 4: Compliance Monitoring (2-2.5h)
 - Task 5: Rate Limiting (1.5-2h)

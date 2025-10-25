@@ -1,0 +1,399 @@
+# Suricata Custom Rules - Faceless YouTube
+# Application-specific threat detection
+# 
+# Rule format: action proto src_ip src_port -> dst_ip dst_port (options)
+# Actions: alert, pass, drop, reject, file-data
+# Protocols: tcp, udp, icmp, http, tls, ssh, dns
+
+# ============================================================================
+# SQL INJECTION DETECTION RULES (500-599)
+# ============================================================================
+
+# Detect SQL injection in HTTP GET parameters
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "SQL Injection - Common SQLi Patterns in HTTP GET";
+    flow: to_server,established;
+    content: "GET";
+    http_method;
+    pcre: "/(\bunion\b|\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\s+select\b|\bor\s+1\s*=\s*1|'.*--|\";.*--|\/\*.*\*\/)/i";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 500001;
+    rev: 1;
+    priority: 1;
+    metadata: phase post-detect;
+)
+
+# Detect SQL injection in HTTP POST body
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "SQL Injection - Common SQLi Patterns in HTTP POST";
+    flow: to_server,established;
+    content: "POST";
+    http_method;
+    content_type: "application/x-www-form-urlencoded|application/json";
+    http_client_body;
+    pcre: "/(\bunion\b|\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\s+select\b|\bor\s+1\s*=\s*1|'.*--|\";.*--|\/\*.*\*\/)/i";
+    classtype: web-application-attack;
+    sid: 500002;
+    rev: 1;
+    priority: 1;
+    metadata: phase post-detect;
+)
+
+# Detect SQL keywords in suspicious queries
+alert http $HOME_NET any -> $EXTERNAL_NET any (
+    msg: "SQL Injection - Suspicious Multiple SQL Keywords";
+    flow: to_server,established;
+    content: "SELECT";
+    http_uri;
+    content: "FROM";
+    http_uri;
+    distance: 0;
+    within: 200;
+    content: "WHERE";
+    http_uri;
+    distance: 0;
+    within: 300;
+    pcre: "/(union|drop|insert|update|delete)/i";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 500003;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# CROSS-SITE SCRIPTING (XSS) DETECTION RULES (510-519)
+# ============================================================================
+
+# Detect script injection in HTTP parameters
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "XSS - Script Tag Injection Detected";
+    flow: to_server,established;
+    content: "<script";
+    http_uri;
+    http_client_body;
+    http_stat_msg;
+    nocase;
+    classtype: web-application-attack;
+    sid: 510001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect JavaScript event handlers
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "XSS - JavaScript Event Handler Detected";
+    flow: to_server,established;
+    pcre: "/on(load|error|mouseover|click|focus)\s*=/i";
+    http_uri;
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 510002;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect iframe injections
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "XSS - IFrame Injection Detected";
+    flow: to_server,established;
+    content: "<iframe";
+    http_uri;
+    http_client_body;
+    nocase;
+    classtype: web-application-attack;
+    sid: 510003;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# COMMAND INJECTION DETECTION RULES (520-529)
+# ============================================================================
+
+# Detect shell command separators
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Command Injection - Shell Metacharacters Detected";
+    flow: to_server,established;
+    content: "GET";
+    http_method;
+    pcre: "/(;|\||`|\$\(|\&\&)/";
+    http_uri;
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 520001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect bash/sh commands
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Command Injection - Unix Shell Command Detected";
+    flow: to_server,established;
+    pcre: "/(\/bin\/sh|\/bin\/bash|cat\s+|ls\s+|id\s+|wget\s+|curl\s+|nc\s+)/i";
+    http_uri;
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 520002;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# PATH TRAVERSAL / DIRECTORY TRAVERSAL RULES (530-539)
+# ============================================================================
+
+# Detect path traversal attempts
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Path Traversal - Directory Traversal Attempt Detected";
+    flow: to_server,established;
+    content: "..";
+    http_uri;
+    content: "/";
+    within: 2;
+    pcre: "/(\.\.[\/\\])+/";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 530001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect absolute path access attempts
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Path Traversal - Absolute Path Access Attempt";
+    flow: to_server,established;
+    pcre: "/(\/etc\/|\/var\/|\/proc\/|\/sys\/|C:\\\\|D:\\\\)/i";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 530002;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect null byte injection
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Path Traversal - Null Byte Injection Attempt";
+    flow: to_server,established;
+    content: "%00";
+    http_uri;
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 530003;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# PROTOCOL ANOMALY DETECTION RULES (540-549)
+# ============================================================================
+
+# Detect malformed HTTP requests
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Protocol Anomaly - Malformed HTTP Request";
+    flow: to_server,established;
+    http_stat_code: ! 200-599;
+    classtype: protocol-command-decode;
+    sid: 540001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect suspicious HTTP methods
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Protocol Anomaly - Suspicious HTTP Method Used";
+    flow: to_server,established;
+    content: "TRACE";
+    http_method;
+    classtype: protocol-command-decode;
+    sid: 540002;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect HTTP request smuggling attempts
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Protocol Anomaly - HTTP Request Smuggling Attempt";
+    flow: to_server,established;
+    content: "Content-Length";
+    http_header;
+    content: "Transfer-Encoding";
+    http_header;
+    distance: 0;
+    within: 500;
+    classtype: protocol-command-decode;
+    sid: 540003;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# BRUTE FORCE / CREDENTIAL ATTACK RULES (550-559)
+# ============================================================================
+
+# Detect multiple failed login attempts (via HTTP 401/403 responses)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Brute Force - Multiple Failed Authentication Attempts";
+    flow: to_server,established;
+    content: "/api/auth/login";
+    http_uri;
+    http_stat_code: 401;
+    threshold: type both, track by_src, count 5, seconds 60;
+    classtype: unsuccessful-user;
+    sid: 550001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect dictionary attack patterns
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Brute Force - Rapid Requests from Single IP";
+    flow: to_server,established;
+    threshold: type threshold, track by_src, count 100, seconds 60;
+    classtype: bad-unknown;
+    sid: 550002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# SUSPICIOUS TRAFFIC PATTERNS (560-569)
+# ============================================================================
+
+# Detect port scanning activity
+alert tcp any any -> $HOME_NET any (
+    msg: "Network Reconnaissance - TCP Port Scan Detected";
+    flow: new;
+    threshold: type both, track by_src, count 20, seconds 60;
+    classtype: network-scan;
+    sid: 560001;
+    rev: 1;
+    priority: 3;
+)
+
+# Detect DNS query for suspicious domains
+alert dns $EXTERNAL_NET any -> any 53 (
+    msg: "DNS Exfiltration Attempt - Suspicious Domain Query";
+    flow: to_server,established;
+    dns_query; content: ".onion";
+    classtype: bad-unknown;
+    sid: 560002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# ANTIVIRUS/MALWARE SIGNATURES (570-579)
+# ============================================================================
+
+# Detect suspicious file uploads (PE executable)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Malware - Executable File Upload Detected";
+    flow: to_server,established;
+    content: "POST";
+    http_method;
+    file_data;
+    content: "MZ";
+    offset: 0;
+    depth: 2;
+    classtype: suspicious-file-activity;
+    sid: 570001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect suspicious file extensions in uploads
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Malware - Suspicious File Extension Upload";
+    flow: to_server,established;
+    content: "POST";
+    http_method;
+    pcre: "/(\\.exe|\\.bat|\\.cmd|\\.scr|\\.vbs|\\.js|\\.jar)/i";
+    http_uri;
+    http_client_body;
+    classtype: suspicious-file-activity;
+    sid: 570002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# VULNERABILITY-SPECIFIC RULES (580-589)
+# ============================================================================
+
+# Detect XXE (XML External Entity) injection
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "XXE Injection - XML External Entity Detected";
+    flow: to_server,established;
+    content: "<?xml";
+    http_client_body;
+    pcre: "/<!ENTITY|SYSTEM|PUBLIC/i";
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 580001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect CSRF token bypass attempts
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "CSRF - Potential Token Bypass Attempt";
+    flow: to_server,established;
+    content: "POST";
+    http_method;
+    content: "!";
+    http_header;
+    content: "csrf";
+    http_header;
+    classtype: web-application-attack;
+    sid: 580002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# APPLICATION-SPECIFIC THREAT RULES (590-599)
+# ============================================================================
+
+# Detect attempts to access admin endpoints without authentication
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Application Threat - Unauthorized Admin Access Attempt";
+    flow: to_server,established;
+    content: "/api/admin/";
+    http_uri;
+    content: "!";
+    http_header;
+    content: "Authorization";
+    http_header;
+    classtype: web-application-attack;
+    sid: 590001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect attempts to modify critical configuration
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Application Threat - Configuration Modification Attempt";
+    flow: to_server,established;
+    content: "PUT";
+    http_method;
+    content: "/api/config/";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 590002;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect attempts to access sensitive data endpoints
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Application Threat - Sensitive Data Access Attempt";
+    flow: to_server,established;
+    content: "/api/secrets/";
+    http_uri;
+    classtype: web-application-attack;
+    sid: 590003;
+    rev: 1;
+    priority: 1;
+)

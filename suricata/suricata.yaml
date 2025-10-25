@@ -1,0 +1,304 @@
+# Suricata IDS/IPS Configuration - Faceless YouTube
+# Intrusion Detection and Prevention System
+# Target: Staging Environment (High sensitivity, low false positives)
+#
+# This configuration enables real-time threat detection with protocol analysis,
+# custom rule matching, and automatic threat response integration.
+
+%YAML 1.1
+---
+
+# Global configuration
+global:
+  # Checksum validation for TCP packets
+  checksum-validation: auto
+
+# Logging configuration
+logging:
+  # Default log level
+  default-log-level: notice
+
+  # Log outputs
+  outputs:
+    - console:
+        enabled: yes
+        level: notice
+    - file:
+        enabled: yes
+        filename: /var/log/suricata/suricata.log
+        level: notice
+    - syslog:
+        enabled: yes
+        facility: local0
+        format: "<%pri%>%app-name%: %msg%"
+
+# Affinity/Threading
+threading:
+  # Number of packets in the packet pool
+  set-cpu-affinity: no
+  # Uncomment to set affinity to specific CPUs
+  # cpu-affinity:
+  #   - management-cpu-set:
+  #       cpu: [0]
+  #   - receive-cpu-set:
+  #       cpu: [0]
+  #   - worker-cpu-set:
+  #       cpu: ["1-3"]
+  #       mode: "balanced"
+
+# Detection/Decoding
+detect-engine:
+  - rule-path: /etc/suricata/rules
+    default-rule-path: /etc/suricata/rules
+    default-classify-path: /etc/suricata/classify.config
+    default-reference-config-path: /etc/suricata/reference.config
+  # Preprocess rules (event processing)
+  profile: balanced
+  # Packet buffer limit
+  packet-buffer-limit: 65535
+  # Memory limit for stream reassembly
+  stream-event-log: yes
+
+# Advanced options
+advanced:
+  # Delayed detection of DNS requests
+  delayed-detect: yes
+  # Use rule profiling
+  rule-profiling: yes
+
+# pcap logging (for forensics)
+pcap-log:
+  enabled: no
+  filename: /var/log/suricata/pcap.log
+  limit: 1000mb
+  buffer-size: 16mb
+  compression: none
+  # Dir to save pcaps
+  dir: /var/log/suricata/pcaps
+
+# Eve (JSON) logging for Prometheus/ELK integration
+eve-log:
+  enabled: yes
+  filetype: regular
+  filename: /var/log/suricata/eve.json
+  # Filesize limit (500MB)
+  filesize: 524288000
+  # Compression
+  compression: none
+  # Alerts
+  - alert:
+      enabled: yes
+      payload: yes
+      payload-buffer-size: 4kb
+      payload-print-all-settings: no
+      # http-body: yes
+      # http-body-printable: yes
+      packet: yes
+      metadata: yes
+      verdict: yes
+  # Flow events
+  - flow:
+      enabled: yes
+  # Http events
+  - http:
+      enabled: yes
+      extended: yes
+  # DNS events
+  - dns:
+      enabled: yes
+  # TLS events
+  - tls:
+      enabled: yes
+  # SSH events
+  - ssh:
+      enabled: yes
+  # File-data events
+  - file-data:
+      enabled: yes
+  # Payload print all fields
+  payload-buffer-size: 4kb
+
+# Input configuration
+inputs:
+  - interface:
+      enabled: yes
+      interface: any
+      # Use af-packet for better performance
+      threads: auto
+      # Buffer size for packet acquisition
+      buffer-size: 32768
+      # Bpf-filter to reduce processing
+      # bpf-filter: "tcp port 80 or tcp port 443"
+  # For pcap files:
+  # - pcap-file:
+  #     enabled: no
+  #     filename: /tmp/traffic.pcap
+
+# Output configuration
+outputs:
+  # Unified2 output (legacy support)
+  - unified2-alert:
+      enabled: no
+      filename: /var/log/suricata/unified2.alert
+
+  # File stores
+  - file-store:
+      enabled: yes
+      dir: /var/log/suricata/files
+
+  # Syslog output
+  - syslog:
+      enabled: yes
+      facility: LOG_LOCAL0
+      level: LOG_ALERT
+      ident: suricata
+
+# Threat Intelligence (GeoIP, ASN)
+geoip:
+  # Path to GeoIP database
+  mmdb-dir: /usr/share/GeoIP
+
+# HTTP Server (for API/metrics)
+http-server:
+  enabled: yes
+  listen-addr: 0.0.0.0
+  listen-port: 9998
+  server-version: Suricata/1.0
+
+# Protocols and features
+protocols:
+  # Decoding options
+  ip:
+    # Max fragmentation
+    # reassemble-fragments: yes
+    # Max fragment window (seconds)
+    # fragment-timeout: 60
+  # TCP options
+  tcp:
+    # TCP stream reassembly
+    stream-event-log: yes
+    # Checksum validation
+    checksum-validation: auto
+    # Bypass support for TCP
+    bypass-support: no
+  # UDP options
+  udp:
+  # ICMP
+  icmp:
+  # ICMPv6
+  icmpv6:
+
+# App protocols
+app-protocols:
+  # HTTP configuration
+  http:
+    # Server configuration
+    default-port: 80
+    http1: yes
+    http2: yes
+    # Parsing options
+    request-body-limit: 1mb
+    response-body-limit: 1mb
+  # HTTPS (TLS/SSL)
+  https:
+    # Server configuration
+    default-port: 443
+  # TLS configuration
+  tls:
+    # JA3 fingerprinting
+    ja3-fingerprinting: yes
+  # DNS
+  dns:
+  # SMB
+  smb:
+  # SSH
+  ssh:
+    # Port
+    default-port: 22
+  # SMTP
+  smtp:
+  # FTP
+  ftp:
+  # File transfer
+  file-transfer:
+
+# Protocol specific settings
+stream:
+  # TCP stream reassembly
+  reassembly:
+    enabled: yes
+    # Segment pool size
+    memcap: 33mb
+    # Minimal number of segments
+    min-segment-size: 4
+    # Max segment list depth
+    max-segments: 2048
+  # Inline mode (IPS)
+  inline: yes
+  # Bypass mode
+  bypass: no
+
+# Action configuration
+action:
+  # Default rule action
+  drop: yes
+  reject: yes
+  alert: yes
+  pass: yes
+
+# Defrag module
+defrag:
+  memcap: 33mb
+  preproc-memcap: 33mb
+  timeout: 60
+
+# Flow configuration
+flow:
+  memcap: 33mb
+  # Flow expire threshold
+  # 30 seconds of inactivity
+  expire-unack-tcp: 30
+  # 30 seconds
+  expire-established-tcp: 300
+  # 30 seconds
+  expire-unack-udp: 30
+  # 30 seconds
+  expire-established-udp: 300
+
+# Host OS data
+host-os-policy:
+  # Windows
+  windows: [0.0.0.0/0]
+  # Cisco
+  cisco: []
+  # BSD/Apple
+  bsd: []
+  # Linux
+  linux: []
+  # Old Linux
+  old-linux: []
+  # Solaris
+  solaris: []
+
+# Rules
+rule-files:
+  - suricata.rules
+  - custom-application-rules.rules
+  - custom-threat-rules.rules
+  # Emerging Threats community rules (optional - requires download)
+  # - emerging-threats.rules
+
+# Thresholds
+threshold:
+  # Threshold configuration
+  # policy balanced-ips
+  policy: balanced-ips
+
+# Post-processing
+post-processors:
+  - file-data:
+      enabled: yes
+      libmagic: yes
+
+# Include external config files if needed
+include: /etc/suricata/suricata-custom.yaml

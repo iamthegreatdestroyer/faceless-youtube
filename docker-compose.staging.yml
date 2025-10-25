@@ -385,6 +385,36 @@ services:
     networks:
       - staging-network
 
+  suricata-staging:
+    image: jasonish/suricata:latest
+    container_name: suricata-staging
+    ports:
+      - "9998:9998"
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+    volumes:
+      - ./suricata/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./suricata/rules/:/etc/suricata/rules/:ro
+      - suricata-logs:/var/log/suricata
+    environment:
+      - SURICATA_OPTIONS=-i any
+    command: -c /etc/suricata/suricata.yaml -i any
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9998/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - staging-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
 networks:
   staging-network:
     driver: bridge
@@ -397,3 +427,4 @@ volumes:
   prometheus-data:
   alertmanager-data:
   grafana-data:
+  suricata-logs:

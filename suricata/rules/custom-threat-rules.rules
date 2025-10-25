@@ -1,0 +1,381 @@
+# Suricata Custom Threat Rules - Faceless YouTube
+# Network and protocol-level threat detection
+# These rules focus on network-based attacks, anomalies, and threat indicators
+
+# ============================================================================
+# NETWORK RECONNAISSANCE RULES (600-609)
+# ============================================================================
+
+# Detect nmap SYN scan pattern
+alert tcp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Network Reconnaissance - Nmap SYN Scan Detected";
+    flow: stateless;
+    flags: S;
+    threshold: type both, track by_src, count 15, seconds 60;
+    classtype: network-scan;
+    sid: 600001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect nmap UDP scan pattern
+alert udp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Network Reconnaissance - Nmap UDP Scan Detected";
+    flow: stateless;
+    threshold: type both, track by_src, count 20, seconds 60;
+    classtype: network-scan;
+    sid: 600002;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect ACK scan (firewall mapping)
+alert tcp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Network Reconnaissance - TCP ACK Scan (Firewall Mapping)";
+    flow: stateless;
+    flags: A,!S,!F,!R;
+    threshold: type both, track by_src, count 10, seconds 60;
+    classtype: network-scan;
+    sid: 600003;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# DENIAL OF SERVICE (DoS) RULES (610-619)
+# ============================================================================
+
+# Detect TCP SYN flood (connection exhaustion)
+alert tcp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "DoS Attack - TCP SYN Flood Detected";
+    flow: stateless;
+    flags: S;
+    threshold: type both, track by_dst, count 100, seconds 10;
+    classtype: denial-of-service;
+    sid: 610001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect UDP flood pattern
+alert udp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "DoS Attack - UDP Flood Detected";
+    flow: stateless;
+    threshold: type both, track by_dst, count 200, seconds 10;
+    classtype: denial-of-service;
+    sid: 610002;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect ICMP echo flood (ping flood)
+alert icmp $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "DoS Attack - ICMP Echo Flood Detected";
+    icmp_type: 8;
+    threshold: type both, track by_dst, count 100, seconds 10;
+    classtype: denial-of-service;
+    sid: 610003;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect DNS query flood
+alert dns $EXTERNAL_NET any -> any 53 (
+    msg: "DoS Attack - DNS Query Flood Detected";
+    flow: to_server,established;
+    threshold: type both, track by_dst, count 50, seconds 10;
+    classtype: denial-of-service;
+    sid: 610004;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# TROJAN/BACKDOOR COMMUNICATION (620-629)
+# ============================================================================
+
+# Detect common C&C communication pattern (suspicious port usage)
+alert tcp $HOME_NET any -> $EXTERNAL_NET [6667, 6668, 6669, 6697, 8000, 8080, 8443] (
+    msg: "Trojan - Common C&C Port Communication Detected";
+    flow: to_server,established;
+    threshold: type both, track by_src, count 3, seconds 300;
+    classtype: trojan-activity;
+    sid: 620001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect reverse shell attempts (outbound telnet/ssh on non-standard port)
+alert tcp $HOME_NET any -> $EXTERNAL_NET !22 (
+    msg: "Backdoor - Potential Reverse Shell Attempt (SSH-like)";
+    flow: to_server,established;
+    content: "SSH-2.0";
+    classtype: shellcode-detect;
+    sid: 620002;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# EXPLOITATION ATTEMPTS (630-639)
+# ============================================================================
+
+# Detect buffer overflow attempts (excessive NOP sled)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Exploitation - NOP Sled (Buffer Overflow Attempt)";
+    flow: to_server,established;
+    content: "%90";
+    http_uri;
+    http_client_body;
+    pcre: "/(%90){20,}/";
+    classtype: shellcode-detect;
+    sid: 630001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect shellcode patterns (x86 common opcodes)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Exploitation - Potential Shellcode Detected";
+    flow: to_server,established;
+    content: "|FF|E4";
+    http_client_body;
+    classtype: shellcode-detect;
+    sid: 630002;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect format string attacks
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Exploitation - Format String Attack Detected";
+    flow: to_server,established;
+    pcre: "/(%x|%s|%n|%p)\s*(%x|%s|%n|%p)/";
+    http_uri;
+    http_client_body;
+    classtype: web-application-attack;
+    sid: 630003;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# MALWARE/INFECTION INDICATORS (640-649)
+# ============================================================================
+
+# Detect common malware User-Agent strings
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Malware Indicator - Known Malware User-Agent";
+    flow: to_server,established;
+    content: "User-Agent|3a|";
+    http_header;
+    pcre: "/(curl|wget|python|java|scanner|bot|crawler)/i";
+    classtype: suspicious-file-activity;
+    sid: 640001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect attempts to download executable files from HTTP (not HTTPS)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Malware Indicator - Executable Download over HTTP";
+    flow: to_server,established;
+    content: ".exe";
+    http_uri;
+    classtype: suspicious-file-activity;
+    sid: 640002;
+    rev: 1;
+    priority: 1;
+)
+
+# ============================================================================
+# TLS/SSL ATTACKS (650-659)
+# ============================================================================
+
+# Detect TLS version downgrade attempt (SSLv2/SSLv3)
+alert tls $EXTERNAL_NET any -> $HOME_NET 443 (
+    msg: "TLS Attack - Version Downgrade Attempt (Old TLS)";
+    flow: to_server,established;
+    tls_version: sslv2 | sslv3 | tls10 | tls11;
+    classtype: protocol-command-decode;
+    sid: 650001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect weak cipher usage
+alert tls $EXTERNAL_NET any -> $HOME_NET 443 (
+    msg: "TLS Attack - Weak Cipher Suite Detected";
+    flow: to_server,established;
+    tls_cipher: "NULL" | "EXPORT" | "DES" | "RC4" | "anon";
+    classtype: protocol-command-decode;
+    sid: 650002;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect certificate validation bypass attempts
+alert tls $EXTERNAL_NET any -> $HOME_NET 443 (
+    msg: "TLS Attack - Self-Signed Certificate Detected";
+    flow: to_server,established;
+    tls_cert_issuer: ! "CN=*";
+    classtype: protocol-command-decode;
+    sid: 650003;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# DNS ATTACKS (660-669)
+# ============================================================================
+
+# Detect DNS query for suspicious TLDs
+alert dns $EXTERNAL_NET any -> any 53 (
+    msg: "DNS Threat - Suspicious TLD Query";
+    flow: to_server,established;
+    dns_query;
+    pcre: "/\.(tk|ml|ga|cf|click|download|stream)$/i";
+    classtype: bad-unknown;
+    sid: 660001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect DNS data exfiltration pattern (large TXT records)
+alert dns $EXTERNAL_NET any -> any 53 (
+    msg: "DNS Threat - Potential DNS Exfiltration Attempt";
+    flow: to_server,established;
+    dns_query;
+    pcre: "/^.{100,}/";
+    classtype: bad-unknown;
+    sid: 660002;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect DNS tunnel attempts
+alert dns $EXTERNAL_NET any -> any 53 (
+    msg: "DNS Threat - Possible DNS Tunnel Detected";
+    flow: to_server,established;
+    dns_query;
+    pcre: "/^[a-zA-Z0-9]{50,}\.example\.com$/";
+    classtype: bad-unknown;
+    sid: 660003;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# SSH ATTACKS (670-679)
+# ============================================================================
+
+# Detect SSH brute force attempts
+alert ssh $EXTERNAL_NET any -> $HOME_NET 22 (
+    msg: "SSH Attack - Brute Force Attempt Detected";
+    flow: to_server,established;
+    ssh.auth_attempts;
+    threshold: type both, track by_src, count 5, seconds 60;
+    classtype: unsuccessful-user;
+    sid: 670001;
+    rev: 1;
+    priority: 1;
+)
+
+# Detect SSH version scanning
+alert ssh $EXTERNAL_NET any -> $HOME_NET 22 (
+    msg: "SSH Reconnaissance - SSH Version Scan Detected";
+    flow: to_server,established;
+    ssh_version;
+    classtype: network-scan;
+    sid: 670002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# DATA EXFILTRATION (680-689)
+# ============================================================================
+
+# Detect large data transfer to external hosts
+alert tcp $HOME_NET any -> $EXTERNAL_NET any (
+    msg: "Data Exfiltration - Large Outbound Transfer";
+    flow: to_server,established;
+    byte_extract: 4, 0, total_bytes;
+    content: "|";
+    threshold: type both, track by_src, count 1000000, seconds 60;
+    classtype: bad-unknown;
+    sid: 680001;
+    rev: 1;
+    priority: 2;
+)
+
+# Detect compression tool usage (likely data exfiltration prep)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Data Exfiltration - Compression Utility Call";
+    flow: to_server,established;
+    pcre: "/(zip|rar|7z|gzip|tar)\s/i";
+    http_uri;
+    http_client_body;
+    classtype: bad-unknown;
+    sid: 680002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# POLICY VIOLATION (690-699)
+# ============================================================================
+
+# Detect use of unauthorized ports
+alert tcp $HOME_NET any -> $EXTERNAL_NET ![80, 443, 53, 123, 22] (
+    msg: "Policy Violation - Unauthorized Port Usage";
+    flow: to_server,established;
+    threshold: type both, track by_src, count 5, seconds 300;
+    classtype: policy-violation;
+    sid: 690001;
+    rev: 1;
+    priority: 3;
+)
+
+# Detect attempts to proxy traffic (potential lateral movement)
+alert http $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Policy Violation - Potential Proxy Attempt";
+    flow: to_server,established;
+    content: "CONNECT";
+    http_method;
+    classtype: policy-violation;
+    sid: 690002;
+    rev: 1;
+    priority: 2;
+)
+
+# ============================================================================
+# ANOMALY DETECTION (700-709)
+# ============================================================================
+
+# Detect unusual protocol combinations
+alert ip any any -> any any (
+    msg: "Anomaly - Unusual Protocol Usage";
+    flow: stateless;
+    icmp_type: 3 | 11 | 13;
+    threshold: type both, track by_src, count 50, seconds 60;
+    classtype: bad-unknown;
+    sid: 700001;
+    rev: 1;
+    priority: 3;
+)
+
+# Detect fragmented packets (potential evasion)
+alert ip $EXTERNAL_NET any -> $HOME_NET any (
+    msg: "Anomaly - Excessive Fragmentation Detected";
+    flow: stateless;
+    isdataat: 1, relative;
+    fragbits: M;
+    threshold: type both, track by_src, count 50, seconds 60;
+    classtype: protocol-command-decode;
+    sid: 700002;
+    rev: 1;
+    priority: 2;
+)
+
+# End of custom threat rules

@@ -87,12 +87,12 @@ receivers:
         auth_password: "${SMTP_PASSWORD}"
         headers:
           Subject: "🚨 SECURITY ALERT: {{ .GroupLabels.alertname }}"
-        html: "{{ template \"security_alert.html\" . }}"
+        html: '{{ template "security_alert.html" . }}'
     pagerduty_configs:
       - service_key: "${PAGERDUTY_SERVICE_KEY}"
         description: "{{ .GroupLabels.alertname }}"
         details:
-          firing: "{{ template \"pagerduty.default.instances\" .Alerts.Firing }}"
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
     slack_configs:
       - channel: "#security-alerts"
         title: "🚨 Security Alert"
@@ -126,7 +126,7 @@ receivers:
       - service_key: "${PAGERDUTY_SERVICE_KEY}"
         description: "{{ .GroupLabels.alertname }}"
         details:
-          firing: "{{ template \"pagerduty.default.instances\" .Alerts.Firing }}"
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
     slack_configs:
       - channel: "#ops-alerts"
         title: "🚨 Operational Alert"

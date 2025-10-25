@@ -234,9 +234,14 @@ class WAFEventProcessor:
                 request_body_size=request_body_size,
             )
 
+            # Validate that essential fields are present
+            if not src_ip or src_ip == "unknown" or not rule_id or rule_id == "0":
+                logger.debug(f"Invalid WAF event - missing essential fields")
+                return None
+
             return alert
 
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError, TypeError) as e:
             logger.debug(f"Failed to parse WAF event: {e}")
             return None
 
@@ -333,18 +338,26 @@ class WAFEventProcessor:
         now = datetime.utcnow()
 
         if ip_address not in self.threat_db:
-            self.threat_db[ip_address] = ThreatIntelligence(
+            threat = ThreatIntelligence(
                 ip_address=ip_address,
                 attack_type=attack_type,
                 count=1,
                 confidence=0.8,
                 last_seen=now,
             )
+            threat.rule_ids.add(alert.rule_id)
+            threat.attack_patterns[attack_type] = 1
+            self.threat_db[ip_address] = threat
         else:
             threat = self.threat_db[ip_address]
             threat.count += 1
             threat.last_seen = now
             threat.rule_ids.add(alert.rule_id)
+
+            # Track attack pattern frequency
+            if attack_type not in threat.attack_patterns:
+                threat.attack_patterns[attack_type] = 0
+            threat.attack_patterns[attack_type] += 1
 
             # Increase confidence with each hit
             threat.confidence = min(0.95, threat.confidence + 0.05)

@@ -13,8 +13,10 @@ Date: October 25, 2025
 """
 
 import logging
+import inspect
 from typing import Callable, Optional, Dict, Any
 from datetime import datetime, timedelta
+from functools import wraps
 
 from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -376,60 +378,239 @@ def rate_limit(
     max_requests: int,
     window_seconds: int = 60,
     scope: LimitScope = LimitScope.PER_IP,
+    error_handler: Optional[Callable] = None,
 ):
     """
-    Decorator for endpoint-level rate limiting.
+    Decorator for endpoint-level rate limiting with full async support.
+
+    Supports both async and sync endpoint functions. Automatically handles
+    request extraction from FastAPI context.
 
     Args:
         max_requests: Maximum requests in window
         window_seconds: Time window in seconds
         scope: How to identify request (PER_IP, PER_USER, etc.)
+        error_handler: Optional custom error handler function
+
+    Returns:
+        Decorated function with rate limiting
 
     Example:
+        ```python
         @app.get("/api/search")
-        @rate_limit(max_requests=100, window_seconds=60)
-        async def search(q: str):
+        @rate_limit(max_requests=100, window_seconds=60, scope=LimitScope.PER_IP)
+        async def search(q: str, request: Request):
             return {"query": q}
+
+        # With custom error handler
+        async def custom_error(request, retry_after):
+            return JSONResponse(
+                status_code=429,
+                content={"error": "too_many_requests", "wait": retry_after}
+            )
+
+        @app.get("/api/protected")
+        @rate_limit(max_requests=10, error_handler=custom_error)
+        async def protected_endpoint(request: Request):
+            return {"status": "ok"}
+        ```
+
+    Raises:
+        HTTPException: 429 Too Many Requests if rate limit exceeded
+
+    Notes:
+        - Automatically detects async/sync functions
+        - Extracts request from function parameters
+        - Adds Retry-After header to responses
+        - Compatible with all FastAPI dependency injection
     """
+    import inspect
+    from functools import wraps
+
+    # Create limiter for this endpoint
+    limiter = SlidingWindowRateLimiter(
+        window_size_seconds=window_seconds, max_requests=max_requests
+    )
 
     def decorator(func: Callable) -> Callable:
-        # Create limiter for this endpoint
-        limiter = SlidingWindowRateLimiter(
-            window_size_seconds=window_seconds, max_requests=max_requests
-        )
+        """Apply rate limiting decorator to function."""
 
-        async def wrapper(*args, request: Request = None, **kwargs) -> Any:
-            if not request:
-                # Try to extract from kwargs
-                request = kwargs.get("request")
+        # Check if function is async
+        is_async = inspect.iscoroutinefunction(func)
 
-            if not request:
-                # Can't rate limit without request
+        if is_async:
+            @wraps(func)
+            async def async_wrapper(*args, **kwargs) -> Any:
+                """Async wrapper with rate limiting."""
+                request = _extract_request(func, args, kwargs)
+
+                if not request:
+                    logger.debug(f"No request in {func.__name__}, skipping rate limit")
+                    return await func(*args, **kwargs)
+
+                # Get identifier based on scope
+                identifier = _get_identifier_for_scope(request, scope)
+
+                # Check rate limit
+                info = limiter.record_request(identifier)
+
+                if not info.allowed:
+                    logger.warning(
+                        f"Rate limit exceeded for {identifier}: {info.retry_after}s"
+                    )
+
+                    if error_handler:
+                        # Use custom error handler
+                        return await error_handler(request, info.retry_after)
+
+                    # Default 429 response
+                    return JSONResponse(
+                        status_code=429,
+                        headers={
+                            "Retry-After": str(info.retry_after),
+                            "RateLimit-Limit": str(max_requests),
+                            "RateLimit-Remaining": "0",
+                            "RateLimit-Reset": str(int(info.reset_at)),
+                        },
+                        content={
+                            "error": "rate_limited",
+                            "message": "Too many requests",
+                            "retry_after": info.retry_after,
+                        },
+                    )
+
+                # Call the actual function
                 return await func(*args, **kwargs)
 
-            # Get identifier
-            identifier = RequestIdentifier(
-                EndpointLimitsConfig()
-            )._get_client_ip(request)
+            return async_wrapper
 
-            # Check rate limit
-            info = limiter.record_request(identifier)
+        else:
+            @wraps(func)
+            def sync_wrapper(*args, **kwargs) -> Any:
+                """Sync wrapper with rate limiting."""
+                request = _extract_request(func, args, kwargs)
 
-            if not info.allowed:
-                raise HTTPException(
-                    status_code=429,
-                    detail={
-                        "error": "rate_limited",
-                        "retry_after": info.retry_after,
-                    },
-                )
+                if not request:
+                    logger.debug(f"No request in {func.__name__}, skipping rate limit")
+                    return func(*args, **kwargs)
 
-            # Call function
-            return await func(*args, **kwargs)
+                # Get identifier based on scope
+                identifier = _get_identifier_for_scope(request, scope)
 
-        return wrapper
+                # Check rate limit
+                info = limiter.record_request(identifier)
+
+                if not info.allowed:
+                    logger.warning(
+                        f"Rate limit exceeded for {identifier}: {info.retry_after}s"
+                    )
+
+                    if error_handler:
+                        # Use custom error handler
+                        return error_handler(request, info.retry_after)
+
+                    # Default 429 response
+                    return JSONResponse(
+                        status_code=429,
+                        headers={
+                            "Retry-After": str(info.retry_after),
+                            "RateLimit-Limit": str(max_requests),
+                            "RateLimit-Remaining": "0",
+                            "RateLimit-Reset": str(int(info.reset_at)),
+                        },
+                        content={
+                            "error": "rate_limited",
+                            "message": "Too many requests",
+                            "retry_after": info.retry_after,
+                        },
+                    )
+
+                # Call the actual function
+                return func(*args, **kwargs)
+
+            return sync_wrapper
 
     return decorator
+
+
+def _extract_request(func: Callable, args: tuple, kwargs: dict) -> Optional[Request]:
+    """
+    Extract Request object from function arguments.
+
+    Searches for Request in:
+    1. Function signature parameters
+    2. kwargs dictionary
+    3. args tuple (by inspecting function signature)
+
+    Args:
+        func: Function being decorated
+        args: Positional arguments
+        kwargs: Keyword arguments
+
+    Returns:
+        Request object if found, None otherwise
+    """
+    # Check kwargs first
+    if "request" in kwargs and isinstance(kwargs["request"], Request):
+        return kwargs["request"]
+
+    # Get function signature
+    sig = inspect.signature(func)
+    params = list(sig.parameters.keys())
+
+    # Find Request parameter index
+    request_index = None
+    for i, param_name in enumerate(params):
+        param = sig.parameters[param_name]
+        if param.annotation is Request or param_name == "request":
+            request_index = i
+            break
+
+    if request_index is not None:
+        # Check args
+        if request_index < len(args):
+            if isinstance(args[request_index], Request):
+                return args[request_index]
+
+        # Check kwargs by parameter name
+        param_name = params[request_index]
+        if param_name in kwargs and isinstance(kwargs[param_name], Request):
+            return kwargs[param_name]
+
+    return None
+
+
+def _get_identifier_for_scope(
+    request: Request, scope: LimitScope
+) -> str:
+    """
+    Get identifier string based on scope.
+
+    Args:
+        request: FastAPI Request object
+        scope: Scope type (PER_IP, PER_USER, etc.)
+
+    Returns:
+        Identifier string
+    """
+    identifier_obj = RequestIdentifier(EndpointLimitsConfig())
+
+    if scope == LimitScope.GLOBAL:
+        return "global"
+    elif scope == LimitScope.PER_IP:
+        ip = identifier_obj._get_client_ip(request)
+        return f"ip:{ip}"
+    elif scope == LimitScope.PER_USER:
+        user_id = identifier_obj._get_user_id(request)
+        return f"user:{user_id}" if user_id else "anon"
+    elif scope == LimitScope.HYBRID:
+        user_id = identifier_obj._get_user_id(request)
+        if user_id:
+            return f"user:{user_id}"
+        ip = identifier_obj._get_client_ip(request)
+        return f"ip:{ip}"
+    else:
+        return "default"
 
 
 ###############################################################################

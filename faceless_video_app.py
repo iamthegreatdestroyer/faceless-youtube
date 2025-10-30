@@ -4,12 +4,12 @@ import logging
 import tempfile
 import json
 from datetime import datetime
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QTextEdit, QComboBox, QSpinBox, QLabel, QMessageBox,
                              QLineEdit, QCheckBox, QListWidget, QFileDialog, QMenuBar, QMenu,
                              QAction, QTabWidget, QGridLayout, QStatusBar, QInputDialog)
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon, QKeySequence
 from moviepy import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, CompositeAudioClip
 from moviepy.config import change_settings
 from gtts import gTTS

@@ -27,19 +27,19 @@ REM ============================================================================
     echo.   %~1
     echo ==============================================================================
     echo.
-    exit /b 0
+    goto :eof
 
 :print_success
     echo [SUCCESS] %~1
-    exit /b 0
+    goto :eof
 
 :print_error
     echo [ERROR] %~1
-    exit /b 1
+    goto :eof
 
 :print_info
     echo [INFO] %~1
-    exit /b 0
+    goto :eof
 
 REM ============================================================================
 REM Main Script
@@ -83,8 +83,8 @@ if errorlevel 1 (
 REM 2. Check for executable
 echo.
 echo Checking for executable...
-if not exist "dist\faceless-youtube\faceless-youtube.exe" (
-    call :print_error "Executable not found: dist\faceless-youtube\faceless-youtube.exe"
+if not exist "dist\faceless-youtube.exe" (
+    call :print_error "Executable not found: dist\faceless-youtube.exe"
     echo Please run: pyinstaller --noconfirm build_minimal.spec
     exit /b 1
 )

@@ -1010,4 +1010,4 @@ if __name__ == '__main__':
     app.setStyle("Fusion")
     window = FacelessVideoApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

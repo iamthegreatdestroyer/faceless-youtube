@@ -4,6 +4,26 @@ import logging
 import tempfile
 import json
 from datetime import datetime
+
+# ✅ CRITICAL: Set up logging to AppData BEFORE any imports or GUI setup
+try:
+    user_data_dir = os.path.expanduser("~\\AppData\\Local\\FacelessYouTube")
+    os.makedirs(user_data_dir, exist_ok=True)
+    log_file = os.path.join(user_data_dir, "video_log.txt")
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    logging.info("=== Application starting up ===")
+except Exception as e:
+    # If that fails, use console logging only
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    logging.warning(f"Could not set up file logging, using console only: {e}")
+
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QTextEdit, QComboBox, QSpinBox, QLabel, QMessageBox,
                              QLineEdit, QCheckBox, QListWidget, QFileDialog, QMenuBar, QMenu,
@@ -54,27 +74,11 @@ class FacelessVideoApp(QMainWindow):
         }
         self.youtube = None
         self.dark_theme = True
-        self.init_logging()
+        # ✅ Logging already initialized at module level
         self.init_ui()
         self.verify_assets()
         self.load_affiliate_links()
         self.load_licenses()
-
-    def init_logging(self):
-        try:
-            logging.basicConfig(
-                filename=self.video_log,
-                level=logging.INFO,
-                format='%(asctime)s - %(levelname)s - %(message)s'
-            )
-            logging.info("Application started")
-        except PermissionError:
-            # Fallback to console logging if file logging fails
-            logging.basicConfig(
-                level=logging.INFO,
-                format='%(asctime)s - %(levelname)s - %(message)s'
-            )
-            logging.warning("Could not write to log file, using console logging instead")
 
     def verify_assets(self):
         # Ensure assets directory exists

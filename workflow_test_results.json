@@ -1,56 +1,46 @@
 {
-  "timestamp": "2025-10-23T15:54:09.085135",
+  "timestamp": "2025-11-18T18:41:19.683837",
   "workflows": {
     "authentication": {
       "status": "INFO",
-      "message": "No protected endpoints found (auth not enforced)"
+      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
+      "message": "Authentication check skipped"
     },
     "list_jobs": {
       "status": "FAIL",
-      "error": "Status 404"
+      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
     },
     "create_job": {
       "status": "FAIL",
-      "step": "create_job",
-      "error": "Status 404"
+      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
+      "message": "Workflow not implemented"
     },
     "generate_video": {
       "status": "FAIL",
-      "error": "Endpoint not found"
+      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
     },
     "export_video": {
       "status": "FAIL",
-      "error": "Endpoint not found"
+      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
     }
   },
   "gaps": [
     {
       "workflow": "list_jobs",
-      "issue": "GET /api/jobs returns 404",
+      "issue": "Cannot list jobs: HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
       "severity": "HIGH",
       "step": "GET /api/jobs"
     },
     {
       "workflow": "create_job",
-      "issue": "Cannot create job via /api/jobs",
+      "issue": "Exception: HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
       "severity": "CRITICAL",
       "step": "POST /api/jobs"
-    },
-    {
-      "workflow": "generate_video",
-      "issue": "POST /api/jobs/generate not implemented",
-      "severity": "CRITICAL",
-      "step": "Generate video"
-    },
-    {
-      "workflow": "export_video",
-      "issue": "GET /api/videos/export not implemented",
-      "severity": "HIGH"
     }
   ],
   "summary": {
     "workflows_passed": 1,
     "workflows_total": 5,
-    "gaps_found": 4
+    "gaps_found": 2
   }
 }

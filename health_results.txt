@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-11-18T18:58:16.952650",
+  "checks": {
+    "backend_api": {
+      "status": "PASS",
+      "response_code": 200,
+      "message": "Backend API responding"
+    },
+    "frontend": {
+      "status": "FAIL",
+      "error": "HTTPConnectionPool(host='localhost', port=3000): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002036523DF90>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+      "message": "Frontend not responding"
+    },
+    "health_endpoint": {
+      "status": "PASS",
+      "response_code": 200,
+      "message": "Health endpoint responding"
+    },
+    "api_endpoints": {
+      "/api/jobs": {
+        "status": "PASS",
+        "response_code": 200
+      },
+      "/api/videos": {
+        "status": "FAIL",
+        "response_code": 401
+      },
+      "/api/schedules": {
+        "status": "PASS",
+        "response_code": 404
+      },
+      "/api/stats": {
+        "status": "PASS",
+        "response_code": 404
+      }
+    }
+  },
+  "overall_status": "DEGRADED"
+}
+
+============================================================
+Overall Status: DEGRADED
+============================================================
+Traceback (most recent call last):
+  File "C:\FacelessYouTube\scripts\health_check.py", line 150, in <module>
+    print(f"\u2713 {check_name}: {status} - {message}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sgbil\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 0: character maps to <undefined>

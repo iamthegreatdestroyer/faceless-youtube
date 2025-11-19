@@ -1,46 +1,36 @@
 {
-  "timestamp": "2025-11-18T18:41:19.683837",
+  "timestamp": "2025-11-18T19:04:44.983074",
   "workflows": {
     "authentication": {
       "status": "INFO",
-      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
-      "message": "Authentication check skipped"
+      "message": "No protected endpoints found (auth not enforced)"
     },
     "list_jobs": {
-      "status": "FAIL",
-      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
+      "status": "PASS",
+      "jobs_count": 0,
+      "message": "Successfully retrieved jobs list"
     },
     "create_job": {
-      "status": "FAIL",
-      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
-      "message": "Workflow not implemented"
+      "status": "PASS",
+      "steps_completed": [
+        "create_job"
+      ],
+      "job_id": "404d6cfc-dd7a-4cda-89bf-b8a25990dc73"
     },
     "generate_video": {
       "status": "FAIL",
-      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
+      "error": "Status 405"
     },
     "export_video": {
-      "status": "FAIL",
-      "error": "HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)"
+      "status": "INFO",
+      "status_code": 401,
+      "message": "Endpoint returns 401"
     }
   },
-  "gaps": [
-    {
-      "workflow": "list_jobs",
-      "issue": "Cannot list jobs: HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
-      "severity": "HIGH",
-      "step": "GET /api/jobs"
-    },
-    {
-      "workflow": "create_job",
-      "issue": "Exception: HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=5)",
-      "severity": "CRITICAL",
-      "step": "POST /api/jobs"
-    }
-  ],
+  "gaps": [],
   "summary": {
-    "workflows_passed": 1,
+    "workflows_passed": 4,
     "workflows_total": 5,
-    "gaps_found": 2
+    "gaps_found": 0
   }
 }
